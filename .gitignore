@@ -1,0 +1,12 @@
+# données et sorties
+data/
+output/
+
+# fichiers de travail R
+*.RData
+.Rhistory
+.Rproj.user/
+
+# secrets : ne jamais versionner
+.Renviron
+.env
