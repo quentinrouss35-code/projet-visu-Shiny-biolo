@@ -39,10 +39,31 @@ shinyServer(function(input, output, session) {
            Molecule = as.factor(Molecule))
   
   
-  
+  data <- reactive({
+    choix <- input$choix_tab
+    if(choix == "métaux"){
+      metals_bees
+    } else if (choix == "pesticides") {
+      pest_bees
+    } else if (choix == "occupation du sol") {
+      soil_occup
+    } else {
+      treat_pest
+    }
+  })
+
   
   # table
   output$table <- renderDataTable({
-    metals_bees
+    datatable(data())
   })
+  
+  output$tél_tab <- downloadHandler(
+    filename = function() {
+      paste("data-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      write.csv(data(), file)
+    }
+  )
 })
