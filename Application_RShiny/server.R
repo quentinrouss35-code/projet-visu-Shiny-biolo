@@ -5,84 +5,44 @@ library(plotly)
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
-  metals_bees <- read_csv2("C:/Users/Quent/master2/projet-visu-Shiny-biolo/data/metals_bees.csv")
+  metals_bees <- read_csv2("../data/metals_bees.csv")
   metals_bees <- metals_bees |> 
-    mutate(Date = as.Date(Date, format="%d/%m/%Y"))
+    mutate(Date = as.Date(Date, format="%d/%m/%Y"),
+           Location = as.factor(Location), 
+           Hive = as.factor(Hive)) |> 
+    mutate(`Aluminium mg/kg` = as.numeric(ifelse(grepl(c("^<"), `Aluminium mg/kg`), round(as.numeric(gsub(",", ".", substring(`Arsenic mg/kg`, 3)))/3,2), gsub(",", ".", `Aluminium mg/kg`)))) |>
+    
+    mutate(`Arsenic mg/kg` = as.numeric(ifelse(grepl(c("^<"), `Arsenic mg/kg`), round(as.numeric(gsub(",", ".", substring(`Arsenic mg/kg`, 3)))/3,2), gsub(",", ".", `Arsenic mg/kg`)))) |> 
+    
+    mutate(`Cadmium mg/kg` = as.double(ifelse(grepl(c("^<"), `Cadmium mg/kg`), round(as.numeric(gsub(",", ".", substring(`Cadmium mg/kg`, 3)))/3,2), gsub(",", ".", `Cadmium mg/kg`)))) |>
+    
+    mutate(`Chromium mg/kg` = as.double(ifelse(grepl(c("^<"), `Chromium mg/kg`), round(as.numeric(gsub(",", ".", substring(`Chromium mg/kg`, 3)))/3,2), gsub(",", ".", `Chromium mg/kg`)))) |>
+    
+    mutate(`Cobalt mg/kg` = as.double(ifelse(grepl(c("^<"), `Cobalt mg/kg`), round(as.numeric(gsub(",", ".", substring(`Cobalt mg/kg`, 3)))/3,2), gsub(",", ".", `Cobalt mg/kg`)))) |> 
+    
+    mutate(`Lead mg/kg` = as.double(ifelse(grepl(c("^<"), `Lead mg/kg`), round(as.numeric(gsub(",", ".", substring(`Lead mg/kg`, 3)))/3,2), gsub(",", ".", `Lead mg/kg`))))
   
-  pest_bees <- read_csv2("C:/Users/Quent/master2/projet-visu-Shiny-biolo/data/pesticide_bees.csv")
+  pest_bees <- read_csv2("../data/pesticide_bees.csv")
   pest_bees <- pest_bees |> 
-    mutate(Date = as.Date(Date, format="%d/%m/%Y"))
+    mutate(Date = as.Date(Date, format="%d/%m/%Y"),
+           Location = as.factor(Location), 
+           Hive = as.factor(Hive))
   pest_bees[is.na(pest_bees)] <- 0
   
-  soil_occup <- read_csv2("C:/Users/Quent/master2/projet-visu-Shiny-biolo/data/soil.occupation.3km.csv")
+  soil_occup <- read_csv2("../data/soil.occupation.3km.csv")
+  soil_occup <- soil_occup |> 
+    mutate(Location = as.factor(Location))
   
-  treat_pest <- read_csv2("C:/Users/Quent/master2/projet-visu-Shiny-biolo/data/treatments_pesticides.csv")
+  treat_pest <- read_csv2("../data/treatments_pesticides.csv")
   treat_pest <- treat_pest |> 
-    mutate(Date = as.Date(Date, format="%d/%m/%Y"))
+    mutate(Date = as.Date(Date, format="%d/%m/%Y"),
+           Molecule = as.factor(Molecule))
   
   
   
-  data <- reactive({
-    faithful[, input$var]
-  })
-  
-  
-  
-  
-  output$distPlot<-renderAmCharts({
-    input$go_graph
-    isolate({
-      x <- data()
-      bins<-round(seq(min(x), max(x),length.out=input$bins + 1),2)
-      
-      #useamHist
-      amHist(x=x, control_hist=list(breaks=bins),
-             col=input$color,main = input$titre,
-             export=TRUE,zoom=TRUE)
-    })
-  })
   
   # table
   output$table <- renderDataTable({
     metals_bees
-  })
-  
-  # nombre de classe
-  output$n_bins <- renderText({
-    paste("Nombre de classes : ", input$bins)
-  })
-  
-  #output$boxPlot <- renderPlot({
-  #x <- faithful[, input$var]
-  #boxplot(x, col=input$color)
-  
-  #})
-  
-  output$boxPlot <- renderAmCharts({
-    input$go_graph
-    isolate({
-      x <- data()
-      amBoxplot(x, col=input$color)
-    })
-  })
-  
-  output$nuage_points <- renderPlotly({
-    input$go_graph
-    isolate({
-      plot_ly(data=faithful, x=~waiting, y=~eruptions, 
-              marker = list(color=input$color, size=10))%>%
-        layout(title = 'Manually Specified Labels', plot_bgcolor = "#e5ecf6", xaxis = list(title = 'Attente'), 
-               yaxis = list(title = 'Eruptions'))
-    })
-  })
-  observeEvent(input$go_graph,{
-    updateTabsetPanel(session,inputId="viz",selected="Histogramme")
-    
-    observeEvent(input$show, {
-      showModal(modalDialog(
-        title = "Important message",
-        "This is an important message!"
-      ))
-    })
   })
 })

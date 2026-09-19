@@ -40,41 +40,6 @@ shinyUI(
              tabPanel("ACP", 
                       # Sidebar with a slider input for number of bins 
                       fluidRow(
-                        column(width=4,
-                               sliderInput("bins",
-                                           "Number of bins:",
-                                           min = 1,
-                                           max = 50,
-                                           value = 30),
-                               
-                               # input pour la couleur
-                               colourInput(inputId = "color", label = "Couleur :", value = "#FFD000"),
-                               
-                               # titre du graphique
-                               textInput(inputId = "titre", label = "Titre :", value = "Histogramme"),
-                               
-                               # selection de la colonne
-                               radioButtons(inputId = "var", label = "Variable : ", choices = colnames(faithful)),
-                               actionButton("go_graph", "Update !")
-                        ),
-                        column(width=8,
-                               tabsetPanel(id = "viz",
-                                           tabPanel("Histogramme",
-                                                    # Show a plot of the generated distribution
-                                                    #plotOutput("distPlot"),
-                                                    amChartsOutput("distPlot"),
-                                                    # classes (div centrée)
-                                                    div(textOutput("n_bins"), align = "center")),
-                                           tabPanel("Boxplot",
-                                                    #plotOutput("boxPlot"))
-                                                    amChartsOutput("boxPlot")
-                                           ),
-                                           tabPanel("Nuage de points",
-                                                    plotlyOutput("nuage_points")
-                                           )
-                                           
-                               )
-                        )
                       )
              )
   )
