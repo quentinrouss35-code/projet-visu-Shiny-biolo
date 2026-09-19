@@ -5,20 +5,30 @@ library(plotly)
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
-  #output$distPlot <- renderPlot({
+  metals_bees <- read_csv2("C:/Users/Quent/master2/projet-visu-Shiny-biolo/data/metals_bees.csv")
+  metals_bees <- metals_bees |> 
+    mutate(Date = as.Date(Date, format="%d/%m/%Y"))
   
-  # generate bins based on input$bins from ui.R
-  #x    <- faithful[, input$var] 
-  #bins <- seq(min(x), max(x), length.out = input$bins + 1)
+  pest_bees <- read_csv2("C:/Users/Quent/master2/projet-visu-Shiny-biolo/data/pesticide_bees.csv")
+  pest_bees <- pest_bees |> 
+    mutate(Date = as.Date(Date, format="%d/%m/%Y"))
+  pest_bees[is.na(pest_bees)] <- 0
   
-  # draw the histogram with the specified number of bins
-  #hist(x, breaks = bins, col = input$color, border = 'white', main = input$titre)
+  soil_occup <- read_csv2("C:/Users/Quent/master2/projet-visu-Shiny-biolo/data/soil.occupation.3km.csv")
+  
+  treat_pest <- read_csv2("C:/Users/Quent/master2/projet-visu-Shiny-biolo/data/treatments_pesticides.csv")
+  treat_pest <- treat_pest |> 
+    mutate(Date = as.Date(Date, format="%d/%m/%Y"))
   
   
-  #})
+  
   data <- reactive({
     faithful[, input$var]
   })
+  
+  
+  
+  
   output$distPlot<-renderAmCharts({
     input$go_graph
     isolate({
@@ -32,14 +42,9 @@ shinyServer(function(input, output, session) {
     })
   })
   
-  # summary
-  output$summary <- renderPrint({
-    summary(faithful)
-  })
-  
   # table
   output$table <- renderDataTable({
-    faithful
+    metals_bees
   })
   
   # nombre de classe

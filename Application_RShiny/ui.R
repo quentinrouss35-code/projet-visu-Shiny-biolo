@@ -26,11 +26,13 @@ shinyUI(
                       navlistPanel(
                         "Choix de la représentation du dataset", widths = c(3, 9),
                         tabPanel("Description Globale",
-                                 ),
+                                 
+                        ),
                         tabPanel("Analyse exploratoire",
-                                 ),
+                        ),
                         tabPanel("Tableau de données",
-                                 )
+                                 dataTableOutput("table")
+                        )
                       )
              ), 
              
