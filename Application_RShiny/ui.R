@@ -22,22 +22,20 @@ shinyUI(
   # navbarPage
   navbarPage("Premiers pas avec shiny", theme=theme_test,
              # premier onglet Data
-             tabPanel("Data",
+             tabPanel("Analyse Descriptive",
                       navlistPanel(
-                        "Choix de la représentation du dataset",
-                        tabPanel("dataTable",
-                                 # table
-                                 h1("Tableau de données faithful", style="color: #FFD000;"),
-                                 dataTableOutput("table")),
-                        tabPanel("Summary",
-                                 # summary
-                                 verbatimTextOutput("summary"))
+                        "Choix de la représentation du dataset", widths = c(3, 9),
+                        tabPanel("Description Globale",
+                                 ),
+                        tabPanel("Analyse exploratoire",
+                                 ),
+                        tabPanel("Tableau de données",
+                                 )
                       )
              ), 
              
              # second onglet Visualisation
-             tabPanel("Visualisation", 
-                      
+             tabPanel("ACP", 
                       # Sidebar with a slider input for number of bins 
                       fluidRow(
                         column(width=4,
