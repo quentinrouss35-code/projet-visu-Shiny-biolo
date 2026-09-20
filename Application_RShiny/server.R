@@ -1,6 +1,8 @@
 library(shiny)
 library(rAmCharts)
 library(plotly)
+library(tidyverse)
+library(DT)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
@@ -10,7 +12,7 @@ shinyServer(function(input, output, session) {
     mutate(Date = as.Date(Date, format="%d/%m/%Y"),
            Location = as.factor(Location), 
            Hive = as.factor(Hive)) |> 
-    mutate(`Aluminium mg/kg` = as.numeric(ifelse(grepl(c("^<"), `Aluminium mg/kg`), round(as.numeric(gsub(",", ".", substring(`Arsenic mg/kg`, 3)))/3,2), gsub(",", ".", `Aluminium mg/kg`)))) |>
+    mutate(`Aluminium mg/kg` = as.numeric(ifelse(grepl(c("^<"), `Aluminium mg/kg`), round(as.numeric(gsub(",", ".", substring(`Aluminium mg/kg`, 3)))/3,2), gsub(",", ".", `Aluminium mg/kg`)))) |>
     
     mutate(`Arsenic mg/kg` = as.numeric(ifelse(grepl(c("^<"), `Arsenic mg/kg`), round(as.numeric(gsub(",", ".", substring(`Arsenic mg/kg`, 3)))/3,2), gsub(",", ".", `Arsenic mg/kg`)))) |> 
     
@@ -39,7 +41,75 @@ shinyServer(function(input, output, session) {
            Molecule = as.factor(Molecule))
   
   
-  data <- reactive({
+  # Analyse descriptive
+  
+  ## Analyse exploratoire
+  palette_compar <- reactive({
+    if (input$choix_compar_metal=="Location"){
+      c(
+        "Forest" = "green", 
+        "Suburban" = "blue", 
+        "Urban"  = "grey", 
+        "Vineyard" = "purple"
+      )
+    } else if (input$choix_compar_metal=="Hive"){
+      c(
+        "B1" = "darkgreen",
+        "N1" = "lightgreen",
+        
+        "B20" = "darkblue",
+        "C17" = "lightblue",
+        
+        "C2" = "darkgrey",
+        "C21" = "lightgrey",
+        
+        "B" = "purple4",
+        "N10" = "purple1"
+      )
+    }
+  })
+  
+  output$boxPlot_Metal <- renderAmCharts({
+    input$maj_g_explo
+    
+    isolate({
+      
+      metals_bees <- metals_bees |> 
+        rename(Metal = .data[[input$choix_metal]], Var_Compar = .data[[input$choix_compar_metal]]) |> 
+        select(Metal, Var_Compar)
+      
+      ## Boxplot des taux du métal choisi selon le milieu
+      amBoxplot(Metal~Var_Compar, data=metals_bees, col=palette_compar())
+      
+    })
+  })
+  
+  output$Tempo_Metal <- renderPlotly({
+    input$maj_g_explo
+    isolate({
+      
+      metals_bees <- metals_bees |> 
+        rename(Metal = .data[[input$choix_metal]], Var_Compar = .data[[input$choix_compar_metal]]) |> 
+        select(Var_Compar, Metal, Date)
+      
+      plot_ly(metals_bees, 
+              x = ~Date, 
+              y = ~Metal, 
+              color = ~Var_Compar,
+              type = 'scatter', 
+              mode = 'lines+markers',
+              colors=palette_compar()) |> 
+        layout(
+          yaxis = list(title = input$choix_metal), 
+          xaxis = list(title = ""),
+          hovermode = "x unified",
+          legend = list(orientation = "h", y = -0.2)
+        )
+    })
+  })
+  
+  ## Sous-onglet :  
+  data_tél <- reactive({
     choix <- input$choix_tab
     if(choix == "métaux"){
       metals_bees
@@ -53,9 +123,9 @@ shinyServer(function(input, output, session) {
   })
 
   
-  # table
+  ### Table
   output$table <- renderDataTable({
-    datatable(data())
+    datatable(data_tél())
   })
   
   output$tél_tab <- downloadHandler(
@@ -63,7 +133,7 @@ shinyServer(function(input, output, session) {
       paste("data-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
-      write.csv(data(), file)
+      write.csv(data_tél(), file)
     }
   )
 })
