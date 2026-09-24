@@ -30,64 +30,83 @@ l_metaux <- metals_bees |>
 shinyUI(
   # navbarPage
   navbarPage("Est-ce qu’on peut utiliser les abeilles comme des bio-indicateurs pour détecter et évaluer la contamination de différents milieux environnementaux ?", theme=theme,
-             # premier onglet Data
+             tabPanel("Présentation de l'étude",
+                      
+             ),
+             
+             # Onglet d'analyse descriptive des différents jeux de données de l'étude
              tabPanel("Analyse Descriptive",
                       navlistPanel(
-                        "Choix de la représentation du dataset", widths = c(3, 9),
-                        tabPanel("Description Globale",
-                                 
+                        "Choix du tableau de données", widths = c(3, 9),
+                        tabPanel("Occupation des sols sur un rayon de 3km",
+                                 tabsetPanel(id = "Onglet_OccupSol",
+                                             tabPanel("Tableau de données",
+                                                      dataTableOutput("table_Sol")
+                                             ),
+                                             tabPanel("Graphiques",
+                                             )
+                                 )
                         ),
-                        tabPanel("Analyse exploratoire",
-                                 fluidRow(
-                                   column(width=4,
-                                          wellPanel(
-                                            selectInput(inputId = "choix_metal", label = "Choisissez le métal à représenter",
-                                                        choices = l_metaux,
-                                                        multiple=F
-                                            )
-                                          )
-                                   ),
-                                   column(width=1),
-                                   column(width=2,
-                                          actionButton("maj_g_explo", "Mettre à jour")
-                                   ),
-                                   column(width=2),
-                                   column(width=4,
-                                          wellPanel(
-                                            selectInput(inputId = "choix_compar_metal", label = "Choisissez la strate (donner meilleur nom)",
-                                                        choices = c("Location", "Hive"),
-                                                        multiple=F
-                                            )                                         
-                                          )
-                                   )
-                                 ),
-                                 fluidRow(
-                                   column(width=5,
-                                          amChartsOutput("boxPlot_Metal")
-                                   ),
-                                   column(width=1),
-                                   column(width=6,
-                                          plotlyOutput("Tempo_Metal")
-                                   )
+                        tabPanel("Traitement phytosanitaire dans les vignognes",
+                                 tabsetPanel(id = "Onglet_PestTrait",
+                                             tabPanel("Tableau de données",
+                                                      dataTableOutput("table_Trait")
+                                             ),
+                                             tabPanel("Graphiques",
+                                             )
+                                 )
+                        ),
+                        tabPanel("Pesticides détectés",
+                                 tabsetPanel(id = "Onglet_pest",
+                                             tabPanel("Tableau de données",
+                                                      dataTableOutput("table_Pest")
+                                             ),
+                                             tabPanel("Graphiques",
+                                             )
+                                 )
+                        ),
+                        tabPanel("Métaux détectés",
+                                 tabsetPanel(id = "Onglet_metaux",
+                                             tabPanel("Tableau de données",
+                                                      dataTableOutput("table_Metaux")
+                                             ),
+                                             tabPanel("Graphiques",
+                                                      fluidRow(
+                                                        column(width=4,
+                                                               wellPanel(
+                                                                 selectInput(inputId = "choix_metal", label = "Choisissez le métal à représenter",
+                                                                             choices = l_metaux,
+                                                                             multiple=F
+                                                                 )
+                                                               )
+                                                        ),
+                                                        column(width=1),
+                                                        column(width=2,
+                                                               actionButton("maj_g_explo", "Mettre à jour")
+                                                        ),
+                                                        column(width=1),
+                                                        column(width=4,
+                                                               wellPanel(
+                                                                 selectInput(inputId = "choix_compar_metal", label = "Choisissez la strate (donner meilleur nom)",
+                                                                             choices = c("Location", "Hive"),
+                                                                             multiple=F
+                                                                 )                                         
+                                                               )
+                                                        )
+                                                      ),
+                                                      fluidRow(
+                                                        column(width=5,
+                                                               amChartsOutput("boxPlot_Metal")
+                                                        ),
+                                                        column(width=1),
+                                                        column(width=6,
+                                                               plotlyOutput("Tempo_Metal")
+                                                        )
+                                                      )    
+                                             )
                                  )
                                  
                         ),
-                        tabPanel("Tableau de données",
-                                 fluidRow(
-                                   column(width=6,
-                                          wellPanel(
-                                            selectInput(inputId = "choix_tab", label = "Dataset au choix",
-                                                        choices = c("métaux", "pesticides", "occupation du sol", "traitement pesticides"),
-                                                        multiple=F
-                                            )
-                                          )
-                                   ),
-                                   column(width=6,
-                                          downloadButton("tél_tab", "Télécharger le jeu de données")  
-                                   )
-                                 ),
-                                 dataTableOutput("table")
-                        )
                       )
              ), 
              
