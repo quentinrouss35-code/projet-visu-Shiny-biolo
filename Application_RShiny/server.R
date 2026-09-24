@@ -46,6 +46,8 @@ shinyServer(function(input, output, session) {
   # Analyse descriptive
   
   ## Analyse exploratoire
+  
+  ### Graphiques sur le dataset des taux de concentration de métaux dans les ruches
   palette_compar <- reactive({
     if (input$choix_compar_metal=="Location"){
       c(
@@ -110,34 +112,24 @@ shinyServer(function(input, output, session) {
     })
   })
   
-  ## Sous-onglet :  
-  data_tél <- reactive({
-    choix <- input$choix_tab
-    if(choix == "métaux"){
-      metals_bees
-    } else if (choix == "pesticides") {
-      pest_bees
-    } else if (choix == "occupation du sol") {
-      soil_occup
-    } else {
-      treat_pest
-    }
-  })
 
   
-  ### Table
-  output$table <- renderDataTable({
-    datatable(data_tél())
+  ### Affichage des tableaux de données brutes
+  output$table_Metaux <- renderDataTable({
+    datatable(metals_bees)
   })
   
-  output$tél_tab <- downloadHandler(
-    filename = function() {
-      paste("data-", Sys.Date(), ".csv", sep="")
-    },
-    content = function(file) {
-      write.csv(data_tél(), file)
-    }
-  )
+  output$table_Pest <- renderDataTable({
+    datatable(pest_bees)
+  })
+  
+  output$table_Sol <- renderDataTable({
+    datatable(soil_occup)
+  })
+  
+  output$table_Trait <- renderDataTable({
+    datatable(treat_pest)
+  })
 })
 
 #Kenavo
