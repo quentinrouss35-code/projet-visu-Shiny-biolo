@@ -37,7 +37,7 @@ shinyUI(
              # Onglet d'analyse descriptive des différents jeux de données de l'étude
              tabPanel("Analyse Descriptive",
                       navlistPanel(
-                        "Choix du tableau de données", widths = c(3, 9),
+                        "Choix du tableau de données", widths = c(2, 10),
                         tabPanel("Occupation des sols sur un rayon de 3km",
                                  tabsetPanel(id = "Onglet_OccupSol",
                                              tabPanel("Tableau de données",
@@ -82,6 +82,7 @@ shinyUI(
                                                         ),
                                                         column(width=1),
                                                         column(width=2,
+                                                               br(),
                                                                actionButton("maj_g_explo", "Mettre à jour")
                                                         ),
                                                         column(width=1),
@@ -96,9 +97,11 @@ shinyUI(
                                                       ),
                                                       fluidRow(
                                                         column(width=5,
-                                                               amChartsOutput("boxPlot_Metal")
+                                                               plotlyOutput("boxPlot_Metal")
                                                         ),
-                                                        column(width=1),
+                                                        column(width=1,
+                                                               checkboxGroupInput(inputId = "cases_fonciers", label = "Sélectionnez un(des) foncier(s) :", selected = c("Forest", "Suburban", "Urban", "Vineyard"),
+                                                                                  choices = c("Forêt" = "Forest", "Banlieue" = "Suburban", "Urbain" = "Urban", "Vignoble" = "Vineyard"))),
                                                         column(width=6,
                                                                plotlyOutput("Tempo_Metal")
                                                         )
