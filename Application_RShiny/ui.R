@@ -59,9 +59,10 @@ shinyUI(
                         tabPanel("Pesticides détectés",
                                  tabsetPanel(id = "Onglet_pest",
                                              tabPanel("Tableau de données",
+                                                      checkboxInput("filtre_zero_pest",
+                                                                    "Enlever les lignes ne contenant que des 0",
+                                                                    value = FALSE),
                                                       dataTableOutput("table_Pest")
-                                             ),
-                                             tabPanel("Graphiques",
                                              )
                                  )
                         ),
