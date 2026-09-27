@@ -23,6 +23,13 @@ l_metaux <- metals_bees |>
   select(!Date:Location) |>
   colnames()
 
+pest_bees <- read_csv2("../data/pesticide_bees.csv")
+pest_bees <- pest_bees |> 
+  mutate(Date = as.Date(Date, format="%d/%m/%Y"),
+         Location = as.factor(Location), 
+         Hive = as.factor(Hive))
+pest_bees[is.na(pest_bees)] <- 0
+
 #gsub(c(" mg/kg"), "", names(metals_bees))
 
 
@@ -31,6 +38,37 @@ shinyUI(
   # navbarPage
   navbarPage("Est-ce qu’on peut utiliser les abeilles comme des bio-indicateurs pour détecter et évaluer la contamination de différents milieux environnementaux ?", theme=theme,
              tabPanel("Présentation de l'étude",
+                      fluidRow(
+                        column(width = 3,
+                               value_box(
+                                 title = "Nombre de ruches",
+                                 value = n_distinct(metals_bees$Hive),
+                                 showcase = tags$span("🐝", style = "font-size: 4rem;"),
+                                 theme = value_box_theme(bg = "Black", fg = "Yellow")
+                               )),
+                        column(width = 3,
+                               value_box(
+                                 title = "Nombre de sites différents",
+                                 value = n_distinct(metals_bees$Location),
+                                 showcase = tags$span("📍️",style = "font-size: 4rem;"),
+                                 theme = value_box_theme(bg = "Black", fg = "Yellow")
+                               )),
+                        column(width = 3,
+                               value_box(
+                                 title = "Nombre de métaux analysés",
+                                 value = ncol(metals_bees) - 3,
+                                 showcase = tags$span("💎️",style = "font-size: 4rem;"),
+                                 theme = value_box_theme(bg = "Black", fg = "Yellow")
+                               )),
+                        column(width = 3,
+                               value_box(
+                                 title = "Nombre de pesticides analysés",
+                                 value = ncol(pest_bees) - 3,
+                                 showcase = tags$span("🧪️",style = "font-size: 4rem;"),
+                                 theme = value_box_theme(bg = "Black", fg = "Yellow")
+                               ))
+                        
+                      )
                       
              ),
              
