@@ -143,6 +143,12 @@ shinyServer(function(input, output, session) {
   })
   
   output$table_Pest <- renderDataTable({
+    # Affichage seulement des lignes ne contenant pas que des 0 dans jeu de données pesticides
+    if (input$filtre_zero_pest){
+      cols_num <- sapply(pest_bees, is.numeric)
+      lignes_a_garder <- rowSums(pest_bees[,cols_num], na.rm = TRUE)>0
+      pest_bees <- pest_bees[lignes_a_garder,]
+    }
     datatable(pest_bees)
   })
   
@@ -154,5 +160,3 @@ shinyServer(function(input, output, session) {
     datatable(treat_pest)
   })
 })
-
-#Kenavo
