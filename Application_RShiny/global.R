@@ -7,6 +7,7 @@ library(plotly)
 library(tidyverse)
 library(DT)
 library(FactoMineR)
+library(treemapify)
 
 # Importation des jeux de données
 
