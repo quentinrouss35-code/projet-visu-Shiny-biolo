@@ -17,7 +17,8 @@ theme <- bs_theme(
 # Define UI for application that draws a histogram
 shinyUI(
   # navbarPage
-  navbarPage("Est-ce qu’on peut utiliser les abeilles comme des bio-indicateurs pour détecter et évaluer la contamination de différents milieux environnementaux ?", theme=theme,
+  ## pbm : Est-ce qu’on peut utiliser les abeilles comme des bio-indicateurs pour détecter et évaluer la contamination de différents milieux environnementaux ?
+  navbarPage("", theme=theme,
              tabPanel("Présentation de l'étude",
                       fluidRow(
                         column(width = 3,
@@ -53,6 +54,7 @@ shinyUI(
                       
              ),
              
+             
              # Onglet d'analyse descriptive des différents jeux de données de l'étude
              tabPanel("Analyse Descriptive",
                       navlistPanel(
@@ -80,7 +82,7 @@ shinyUI(
                                              tabPanel("Tableau de données",
                                                       checkboxInput("filtre_zero_pest",
                                                                     "Enlever les lignes ne contenant que des 0",
-                                                                    value = FALSE),
+                                                                    value = FALSE, width='100%'),
                                                       dataTableOutput("table_Pest")
                                              )
                                  )
@@ -92,7 +94,7 @@ shinyUI(
                                              ),
                                              tabPanel("Graphiques",
                                                       fluidRow(
-                                                        column(width=4,
+                                                        column(width=5,
                                                                wellPanel(
                                                                  selectInput(inputId = "choix_metal", label = "Choisissez le métal à représenter",
                                                                              choices = l_metaux,
@@ -100,28 +102,26 @@ shinyUI(
                                                                  )
                                                                )
                                                         ),
-                                                        column(width=1),
-                                                        column(width=2,
-                                                               br(),
-                                                               actionButton("maj_g_explo", "Mettre à jour")
-                                                        ),
-                                                        column(width=1),
-                                                        column(width=4,
+                                                        column(width=5,
                                                                wellPanel(
                                                                  selectInput(inputId = "choix_compar_metal", label = "Choisissez la strate (donner meilleur nom)",
                                                                              choices = c("Location", "Hive"),
                                                                              multiple=F
                                                                  )                                         
                                                                )
+                                                        ),
+                                                        column(width=2,
+                                                               br(),
+                                                               actionButton("maj_g_explo", "Mettre à jour")
                                                         )
                                                       ),
                                                       fluidRow(
-                                                        column(width=5,
-                                                               plotlyOutput("boxPlot_Metal")
-                                                        ),
                                                         column(width=1,
                                                                checkboxGroupInput(inputId = "cases_fonciers", label = "Sélectionnez un(des) foncier(s) :", selected = c("Forest", "Suburban", "Urban", "Vineyard"),
                                                                                   choices = c("Forêt" = "Forest", "Banlieue" = "Suburban", "Urbain" = "Urban", "Vignoble" = "Vineyard"))),
+                                                        column(width=5,
+                                                               plotlyOutput("boxPlot_Metal")
+                                                        ),
                                                         column(width=6,
                                                                plotlyOutput("Tempo_Metal")
                                                         )
