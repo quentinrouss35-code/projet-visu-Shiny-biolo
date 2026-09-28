@@ -51,3 +51,5 @@ treat_pest <- treat_pest |>
 l_metaux <- metals_bees |> 
   select(!Date:Location) |>
   colnames()
+
+message("global.R est exécuté, wd = ", getwd())
