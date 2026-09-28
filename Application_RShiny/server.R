@@ -119,6 +119,10 @@ shinyServer(function(input, output, session) {
   output$table_Trait <- renderDataTable({
     datatable(treat_pest)
   })
+  
+  output$table_Test <- renderDataTable({
+    datatable(data_consolidé)
+  })
 })
 
 #Kenavo

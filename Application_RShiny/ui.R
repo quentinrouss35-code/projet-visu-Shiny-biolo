@@ -125,7 +125,7 @@ shinyUI(
                                                         column(width=6,
                                                                plotlyOutput("Tempo_Metal")
                                                         )
-                                                      )    
+                                                      )
                                              )
                                  )
                                  
@@ -137,6 +137,7 @@ shinyUI(
              tabPanel("ACP", 
                       # Sidebar with a slider input for number of bins 
                       fluidRow(
+                        dataTableOutput("table_Test")
                       )
              )
   )
