@@ -112,13 +112,68 @@ shinyServer(function(input, output, session) {
     datatable(pest_bees)
   })
   
-  output$table_Sol <- renderDataTable({
-    datatable(soil_occup)
+  #Output du tableau de données des sols
+  output$data_table_soil <- renderDataTable({
+    soil_occup_output <- soil_occup |> 
+      filter(Location %in% input$varloc1)
   })
   
-  output$table_Trait <- renderDataTable({
-    datatable(treat_pest)
+  #Téléchargement des données sol 
+  output$downloadData_soil <- downloadHandler(
+    filename =('soil.occupation.3km.csv'),
+    content = function(con) {
+      write.csv(soil_occup, con)
+    })
+  
+  #Affichage des pourcentages d'occupation des sols
+  output$squarePie <- renderPlot({
+    df_plot <- soil_occup |> 
+      filter(Location %in% input$varloc2) |> 
+      pivot_longer(
+        cols = -Location,
+        names_to = "Category",
+        values_to = "Value"
+      ) |> 
+      mutate(Category = str_replace_all(Category, "[_.]", " ")) |> 
+      mutate(Label_text = (paste(Category,"\n", round(Value), "%")))
+    
+    vec_fill=c("darkgrey", "lightgreen", "darkgreen", "darkred", "lightblue", "gold")
+    names(vec_fill)=c("Urban fabric", "Grassland", "Forest", "Vineyards", "Water", "Crops Oilseed Grain")
+    
+    ggplot(df_plot, mapping=aes(area = Value , fill = Category, label = Label_text)) +
+      # Dessine les rectangles de catégories
+      geom_treemap()+
+      # Ajoute les étiquettes de texte
+      geom_treemap_text(colour = "white", place = "centre", size=20, grow= F) +
+      scale_fill_manual(values = vec_fill) +
+      theme(
+        plot.title = element_text(face = "bold",
+                                  size=18,
+                                  hjust=0.5)
+      ) +
+      labs(title = "Poucentages d'occupation des sols pour")+
+      facet_wrap(~ Location) 
+    
   })
+  
+  #Affichage du jeu de données traitement
+  output$data_table_treat <- renderDataTable({
+    if (input$vartreat=="Date"){
+      treat_pest_output <-  treat_pest |> 
+        arrange(Date)
+    }else{
+      treat_pest_output <-  treat_pest |> 
+        arrange(Molecule)
+    }
+    treat_pest_output
+  })
+  
+  #Téléchargement des données 
+  output$downloadtreat_pest <- downloadHandler(
+    filename =('treatments_pesticides.csv'),
+    content = function(con) {
+      write.csv(treat_pest, con)
+    })
   
   output$table_Test <- renderDataTable({
     datatable(data_consolidé)

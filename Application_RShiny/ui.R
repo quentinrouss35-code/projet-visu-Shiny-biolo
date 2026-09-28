@@ -62,18 +62,30 @@ shinyUI(
                         tabPanel("Occupation des sols sur un rayon de 3km",
                                  tabsetPanel(id = "Onglet_OccupSol",
                                              tabPanel("Tableau de données",
-                                                      dataTableOutput("table_Sol")
+                                                      fluidRow(
+                                                        column(width = 9, checkboxGroupInput(inputId = "varloc1", label = "Variable : ", choices = unique(soil_occup$Location), selected="Urban", inline=TRUE)), 
+                                                        column(width = 3, downloadButton("downloadData_soil", "Télécharger les données")),
+                                                        column(width = 12, dataTableOutput("data_table_soil")))
                                              ),
                                              tabPanel("Graphiques",
+                                                      fluidRow(
+                                                        div(h3("Visualisation", style = "color : white"), align="center"),
+                                                        column(width = 2, checkboxGroupInput(inputId = "varloc2", label = "Variable : ", choices = unique(soil_occup$Location), selected="Urban")),
+                                                        column(width = 10, div(
+                                                          style = "margin-bottom: 30px;",
+                                                          plotOutput("squarePie"))))
                                              )
                                  )
                         ),
-                        tabPanel("Traitement phytosanitaire dans les vignognes",
+                        tabPanel("Traitement phytosanitaire dans les vignobles",
                                  tabsetPanel(id = "Onglet_PestTrait",
                                              tabPanel("Tableau de données",
-                                                      dataTableOutput("table_Trait")
-                                             ),
-                                             tabPanel("Graphiques",
+                                                      fluidRow(
+                                                        div(h2("Données de traitement pesticides", style = "color : white"),align="center"),
+                                                        column(width = 9, radioButtons(inputId = "vartreat", label = "Voir par : ", choices = unique(colnames(treat_pest[,1:2])), selected="Date", inline=TRUE)), 
+                                                        column(width = 3, downloadButton("downloadtreat_pest", "Télécharger les données")),
+                                                        dataTableOutput("data_table_treat")
+                                                      )
                                              )
                                  )
                         ),
