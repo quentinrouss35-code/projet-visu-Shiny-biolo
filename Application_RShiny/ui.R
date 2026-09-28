@@ -1,9 +1,4 @@
-library(shiny)
-library(colourpicker)
-library(bslib)
-library(rAmCharts)
-library(plotly)
-library(tidyverse)
+
 
 theme <- bs_theme(
   # Controls the default grayscale palette
@@ -17,20 +12,6 @@ theme <- bs_theme(
   "input-border-color" = "#FFD000"
 )
 
-# Importation des jeux de données
-metals_bees <- read_csv2("../data/metals_bees.csv")
-l_metaux <- metals_bees |> 
-  select(!Date:Location) |>
-  colnames()
-
-pest_bees <- read_csv2("../data/pesticide_bees.csv")
-pest_bees <- pest_bees |> 
-  mutate(Date = as.Date(Date, format="%d/%m/%Y"),
-         Location = as.factor(Location), 
-         Hive = as.factor(Hive))
-pest_bees[is.na(pest_bees)] <- 0
-
-#gsub(c(" mg/kg"), "", names(metals_bees))
 
 
 # Define UI for application that draws a histogram
