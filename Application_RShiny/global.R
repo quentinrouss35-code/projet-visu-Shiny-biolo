@@ -47,6 +47,19 @@ treat_pest <- treat_pest |>
   mutate(Date = as.Date(Date, format="%d/%m/%Y"),
          Molecule = as.factor(Molecule))
 
+
+  #
+data_consolidé <- read_csv2("../data/pesticide_trait_bees.csv")
+data_consolidé <- data_consolidé |>
+  mutate(Date = as.Date(Date, format="%d/%m/%Y"),
+         Location = as.factor(Location), 
+         Hive = as.factor(Hive)) |> 
+  full_join(metals_bees, by=c("Date", "Location", "Hive"))
+data_consolidé[is.na(data_consolidé)] <- 0
+
+
+
+
 #Récupération des noms de métaux
 l_metaux <- metals_bees |> 
   select(!Date:Location) |>
