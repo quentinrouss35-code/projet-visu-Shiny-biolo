@@ -97,37 +97,84 @@ shinyServer(function(input, output, session) {
   
   
   
-  ### Affichage des tableaux de données brutes
-  output$table_Metaux <- renderDataTable({
-    datatable(metals_bees)
+  ### Choix de l'affichage des métaux 
+  data_mod_metaux <- reactive({
+    validate(need(length(input$varmet1) > 0, "Sélectionner au moins un métal."))
+    
+    if('Tous' %in% input$varmet1){
+      validate(need(length(input$varmet1) < 2, "Décocher 'Tous' pour sélectionner des métaux."))
+      metals_bees
+    }
+    else{
+      metals_output <- metals_bees |> 
+        select(all_of(input$varmet1))}
+    
   })
   
-  output$table_Pest <- renderDataTable({
-    # Affichage seulement des lignes ne contenant pas que des 0 dans jeu de données pesticides
+  #Affichage des métaux
+  output$table_Metaux <- renderDataTable({
+    data_mod_metaux()
+  })
+  
+  #Téléchargement des métaux
+  output$downloadData_metal <- downloadHandler(
+    filename =('residus_de_metaux.csv'),
+    content = function(con) {
+      d <- data_mod_metaux()
+      write.csv(d, con)
+    })
+  
+  ##Partie des résidus de pesticides
+  # Affichage seulement des lignes ne contenant pas que des 0 dans jeu de données pesticides
+  data_mod_pest <- reactive({
     if (input$filtre_zero_pest){
       cols_num <- sapply(pest_bees, is.numeric)
       lignes_a_garder <- rowSums(pest_bees[,cols_num], na.rm = TRUE)>0
       pest_bees <- pest_bees[lignes_a_garder,]
+    }else{
+      pest_bees
     }
-    datatable(pest_bees)
+  })
+  
+  #Affichage du tableau de données résidus de pesticide
+  output$table_Pest <- renderDataTable({
+    data_mod_pest()
+  })
+  
+  #Téléchargement des données résidus de pesticide
+  output$downloadData_pest <- downloadHandler(
+    filename =('residus_de_pesticides.csv'),
+    content = function(con) {
+      d <- data_mod_pest()
+      write.csv(d, con)
+    })
+  
+  ##Partie données de sol 
+  #Modif utilisateur du tableau de données des sols
+  data_mod_sol <- reactive({
+    validate(need(length(input$varloc1) > 0, "Sélectionner au moins une localisation."))
+    
+    soil_occup_output <- soil_occup |> 
+      filter(Location %in% input$varloc1)     # locations gardée
   })
   
   #Output du tableau de données des sols
   output$data_table_soil <- renderDataTable({
-    soil_occup_output <- soil_occup |> 
-      filter(Location %in% input$varloc1)
+    data_mod_sol()
   })
   
   #Téléchargement des données sol 
   output$downloadData_soil <- downloadHandler(
-    filename =('soil.occupation.3km.csv'),
+    filename =('occupation_sols_loc.csv'),
     content = function(con) {
-      write.csv(soil_occup, con)
+      d <- data_mod_sol()
+      write.csv(d, con)
     })
   
   #Affichage des pourcentages d'occupation des sols
-  output$squarePie <- renderPlot({
-    df_plot <- soil_occup |> 
+  df_plot_sol <- reactive({
+    validate(need(length(input$varloc2) > 0, "Sélectionner au moins une variable."))
+    df_plot_sol <- soil_occup |> 
       filter(Location %in% input$varloc2) |> 
       pivot_longer(
         cols = -Location,
@@ -137,10 +184,14 @@ shinyServer(function(input, output, session) {
       mutate(Category = str_replace_all(Category, "[_.]", " ")) |> 
       mutate(Label_text = (paste(Category,"\n", round(Value), "%")))
     
+  })
+  
+  output$squarePie <- renderPlot({
+    
     vec_fill=c("darkgrey", "lightgreen", "darkgreen", "darkred", "lightblue", "gold")
     names(vec_fill)=c("Urban fabric", "Grassland", "Forest", "Vineyards", "Water", "Crops Oilseed Grain")
     
-    ggplot(df_plot, mapping=aes(area = Value , fill = Category, label = Label_text)) +
+    ggplot(df_plot_sol(), mapping=aes(area = Value , fill = Category, label = Label_text)) +
       # Dessine les rectangles de catégories
       geom_treemap()+
       # Ajoute les étiquettes de texte
@@ -156,23 +207,31 @@ shinyServer(function(input, output, session) {
     
   })
   
-  #Affichage du jeu de données traitement
-  output$data_table_treat <- renderDataTable({
+  ##Partie traitmement pesticide 
+  #Modif utilisateur du tableau de données des traitements
+  data_mod_treat <- reactive({
+    validate(need(length(input$vartreat) > 0, "Sélectionner au moins une variable."))
+    
     if (input$vartreat=="Date"){
       treat_pest_output <-  treat_pest |> 
         arrange(Date)
     }else{
       treat_pest_output <-  treat_pest |> 
         arrange(Molecule)
-    }
-    treat_pest_output
+    }     
   })
   
-  #Téléchargement des données 
-  output$downloadtreat_pest <- downloadHandler(
-    filename =('treatments_pesticides.csv'),
+  #Affichage du jeu de données traitement
+  output$data_table_treat <- renderDataTable({
+    data_mod_treat()
+  })
+  
+  #Téléchargement des données traitement
+  output$downloadTreat_pest <- downloadHandler(
+    filename =('traitements_pesticide.csv'),
     content = function(con) {
-      write.csv(treat_pest, con)
+      d <- data_mod_treat()
+      write.csv(d, con)
     })
   
   output$table_Test <- renderDataTable({
