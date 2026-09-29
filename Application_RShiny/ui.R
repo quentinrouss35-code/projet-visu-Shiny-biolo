@@ -63,14 +63,19 @@ shinyUI(
                                  tabsetPanel(id = "Onglet_OccupSol",
                                              tabPanel("Tableau de données",
                                                       fluidRow(
-                                                        column(width = 9, checkboxGroupInput(inputId = "varloc1", label = "Variable : ", choices = unique(soil_occup$Location), selected="Urban", inline=TRUE)), 
-                                                        column(width = 3, downloadButton("downloadData_soil", "Télécharger les données")),
-                                                        column(width = 12, dataTableOutput("data_table_soil")))
+                                                        column(width = 12, checkboxGroupInput(inputId = "varloc1",
+                                                                                              label = "Variable : ", 
+                                                                                              choices = unique(soil_occup$Location), 
+                                                                                              selected="Urban", inline=TRUE)),
+                                                        column(width = 12, dataTableOutput("data_table_soil"))),
+                                                      column(width = 3, downloadButton("downloadData_soil", "Télécharger les données"))
                                              ),
                                              tabPanel("Graphiques",
                                                       fluidRow(
                                                         div(h3("Visualisation", style = "color : white"), align="center"),
-                                                        column(width = 2, checkboxGroupInput(inputId = "varloc2", label = "Variable : ", choices = unique(soil_occup$Location), selected="Urban")),
+                                                        column(width = 2, checkboxGroupInput(inputId = "varloc2", label = "Variable : ", 
+                                                                                             choices = unique(soil_occup$Location), 
+                                                                                             selected="Urban")),
                                                         column(width = 10, div(
                                                           style = "margin-bottom: 30px;",
                                                           plotOutput("squarePie"))))
@@ -83,9 +88,10 @@ shinyUI(
                                                       fluidRow(
                                                         div(h2("Données de traitement pesticides", style = "color : white"),align="center"),
                                                         column(width = 9, radioButtons(inputId = "vartreat", label = "Voir par : ", 
-                                                                                       choices = unique(colnames(treat_pest[,1:2])), selected="Date", inline=TRUE)), 
-                                                        column(width = 3, downloadButton("downloadtreat_pest", "Télécharger les données")),
-                                                        dataTableOutput("data_table_treat")
+                                                                                       choices = unique(colnames(treat_pest[,1:2])), 
+                                                                                       selected="Date", inline=TRUE)),
+                                                        dataTableOutput("data_table_treat"),
+                                                        column(width = 3, downloadButton("downloadTreat_pest", "Télécharger les données"))
                                                       )
                                              ),
                                              tabPanel("Frise",
@@ -101,14 +107,20 @@ shinyUI(
                                                       checkboxInput("filtre_zero_pest",
                                                                     "Enlever les lignes ne contenant que des 0",
                                                                     value = FALSE, width='100%'),
-                                                      dataTableOutput("table_Pest")
+                                                      dataTableOutput("table_Pest"),
+                                                      column(width = 12, downloadButton("downloadData_pest", "Télécharger les données"))
                                              )
                                  )
                         ),
                         tabPanel("Métaux détectés",
                                  tabsetPanel(id = "Onglet_metaux",
                                              tabPanel("Tableau de données",
-                                                      dataTableOutput("table_Metaux")
+                                                              column(width = 12, selectInput(inputId = "varmet1",
+                                                                                             label = "Métaux : ", 
+                                                                                             choices = c("Tous",l_metaux), 
+                                                                                             selected= "Tous", multiple=T)),
+                                                              dataTableOutput("table_Metaux"),
+                                                              column(width = 12, downloadButton("downloadData_metal", "Télécharger les données"))
                                              ),
                                              tabPanel("Graphiques",
                                                       fluidRow(
