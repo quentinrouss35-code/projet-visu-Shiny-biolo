@@ -82,10 +82,16 @@ shinyUI(
                                              tabPanel("Tableau de données",
                                                       fluidRow(
                                                         div(h2("Données de traitement pesticides", style = "color : white"),align="center"),
-                                                        column(width = 9, radioButtons(inputId = "vartreat", label = "Voir par : ", choices = unique(colnames(treat_pest[,1:2])), selected="Date", inline=TRUE)), 
+                                                        column(width = 9, radioButtons(inputId = "vartreat", label = "Voir par : ", 
+                                                                                       choices = unique(colnames(treat_pest[,1:2])), selected="Date", inline=TRUE)), 
                                                         column(width = 3, downloadButton("downloadtreat_pest", "Télécharger les données")),
                                                         dataTableOutput("data_table_treat")
                                                       )
+                                             ),
+                                             tabPanel("Frise",
+                                                      div(h2("Données de traitement pesticides", style = "color : white"),align="center"),
+                                                      column(width = 12,div(img(src="Frise_treatment.png", title="Popup", width = "80%")), align="center",
+                                                             style = "margin-bottom: 30px;")
                                              )
                                  )
                         ),
