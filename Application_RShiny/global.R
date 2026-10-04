@@ -1,4 +1,7 @@
 #Chargement des librairies
+if (!require(treemapify)) install.packages("treemapify", dependencies = TRUE)
+if (!require(rclipboard)) install.packages("rclipboard", dependencies = TRUE)
+if (!require(factoextra)) install.packages("factoextra", dependencies = TRUE)
 library(shiny)
 library(colourpicker)
 library(bslib)
@@ -12,6 +15,9 @@ library(sf)
 library(ggplot2)
 library(leaflet)
 library(dplyr)
+library(factoextra)
+library(shinydashboard)
+library(rclipboard)
 
 # Importation des jeux de données
 

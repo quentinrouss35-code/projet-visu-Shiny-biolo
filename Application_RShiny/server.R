@@ -291,6 +291,78 @@ shinyServer(function(input, output, session) {
   output$table_Test <- renderDataTable({
     datatable(data_consolidé)
   })
+  
+  
+  
+  
+  
+  ## ACP sur les concentrations de métaux lourds
+  observeEvent(input$ACP_selectVar, {
+    updateCheckboxGroupInput(
+      session,
+      inputId = "ACP_selectQuantiSup",
+      choices = setdiff(colnames(metals_bees[, 4:20]), input$ACP_selectVar)  # Les choix sont ceux sélectionnés dans le premier
+    )
+  })
+  
+  df_ACP <- eventReactive(input$maj_ACP, {
+    df <- metals_bees |> 
+      filter(Hive %in% input$ACP_selectRuche,
+             Date >= input$ACP_selectDate[1], Date <= input$ACP_selectDate[2]) |> 
+      select(input$ACP_selectQualiSup, 4:20)
+    #rename(Al = `Aluminium mg/kg`, As = `Arsenic mg/kg`, Cd = `Cadmium mg/kg`, Ca = `Calcium g/kg`, Cr = `Chromium mg/kg`, Co = `Cobalt mg/kg`, Cu = `Copper mg/kg`, Fe = `Iron mg/kg`, Mg = `Magnesium g/kg`, Mn = `Manganese mg/kg`, Mo = `Molybdenum mg/kg`, P = `Phosphorous g/kg`, Pb = `Lead mg/kg`, K = `Potassium g/kg`, Na = `Sodium g/kg`, S = `Sulfur g/kg`, Zn = `Zinc mg/kg`) |>
+    df
+  })
+  
+  #######output$Test <- renderTable({df_ACP()})
+  
+  output$ACP_graphDecompo <-renderPlot({
+    input$maj_ACP
+    isolate({
+      res_ACP <- PCA(df_ACP(), scale.unit=T, quanti.sup=input$ACP_selectQuantiSup, quali.sup=input$ACP_selectQualiSup)
+    })
+    barplot(res_ACP$eig[, 2])
+    
+  })
+  
+  
+  output$ACP_graphInd <- renderPlot({
+    input$maj_ACP
+    isolate({
+      res_ACP <- PCA(df_ACP(), scale.unit=T, quanti.sup=input$ACP_selectQuantiSup, quali.sup=input$ACP_selectQualiSup)
+      
+      palette_quali <-
+        if (length(input$ACP_selectQualiSup)!=0){
+          if (input$ACP_selectQualiSup[1]=="Location"){
+            palette_foncier
+          } else {
+            palette_ruche
+          }
+        }
+      
+    })
+    fviz_pca_ind(
+      res_ACP,
+      axes=c(input$ACP_Axe1, input$ACP_Axe2),
+      geom = "point",
+      habillage = ifelse(input$ACP_selectHabillage=="Habillage", 1, "none"),
+      palette = palette_quali,
+      addEllipses = input$ACP_ellispe,
+      #select.ind=list(cos2 =0.5),
+      title = "ACP - individus"
+    )
+  })
+  
+  output$ACP_graphVar <- renderPlot({
+    input$maj_ACP
+    isolate({
+      res_ACP <- PCA(df_ACP(), scale.unit=T, quanti.sup=input$ACP_selectQuantiSup, quali.sup=input$ACP_selectQualiSup)
+    })
+    fviz_pca_var(
+      res_ACP,
+      axes=c(input$ACP_Axe1, input$ACP_Axe2),
+      title = "ACP - variables"
+    )
+  })
+  
 })
-
-#Kenavo

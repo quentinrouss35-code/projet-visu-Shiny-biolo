@@ -231,10 +231,111 @@ shinyUI(
              
              # second onglet Visualisation
              tabPanel("Profils de contamination", 
-                      # Sidebar with a slider input for number of bins 
-                      fluidRow(
-                        dataTableOutput("table_Test")
+                      tags$style(HTML("
+                        .multicol {
+                          column-count: 3;       /* Nombre de colonnes */
+                          column-gap: 20px;      /* Espace entre colonnes */
+                        }
+                        .multicol .checkbox {
+                          margin: 0;             /* Supprime marges inutiles */
+                        }
+                      ")),
+                      # Sidebar with a slider input for number of bins
+                      sidebarLayout(
+                        sidebarPanel(
+                          checkboxInput(inputId = "ACP_PersoData", label = "Structuration de l'ACP", value=F),
+                          conditionalPanel(
+                            condition = "input.ACP_PersoData == true",
+                            wellPanel(
+                              p("Sélectionnez les métaux lourds que vous voulez analyser :"),
+                              div(class="multicol", 
+                                  checkboxGroupInput(inputId = "ACP_selectVar", label=NULL, selected = colnames(metals_bees[, -c(1:3)]), inline=T,
+                                                     choices = colnames(metals_bees[, -c(1:3)]))
+                              ),
+                              tags$hr(),
+                              p("Sélectionnez les ruches que vous voulez analyser :"),
+                              div(class="multicol", 
+                                  checkboxGroupInput(inputId = "ACP_selectRuche", label=NULL, selected = unique(metals_bees$Hive), inline=T,
+                                                     choices = unique(metals_bees$Hive))
+                              ),
+                              tags$hr(),
+                              p("Sélectionnez une période :"),
+                              dateRangeInput(inputId = "ACP_selectDate", label = NULL,
+                                             start = min(metals_bees$Date), end = max(metals_bees$Date), 
+                                             min = min(metals_bees$Date), max = max(metals_bees$Date), 
+                                             format = "dd-mm-yyyy", language = "fr", separator = " à "),
+                              tags$hr(),
+                              p("Sélectionnez les variables quantitatives supplémentaires :"),
+                              div(class="multicol",
+                                  checkboxGroupInput(inputId = "ACP_selectQuantiSup", label=NULL, inline=T,
+                                                     choices = NULL)
+                              ),
+                              p("Sélectionnez les variables qualitatives supplémentaires :"),
+                              div(class="multicol",
+                                  checkboxGroupInput(inputId = "ACP_selectQualiSup", label=NULL, inline=T, selected=c("Location"),
+                                                     choices = colnames(metals_bees[, 1:3]))
+                              ),
+                              actionButton("maj_ACP", "Mettre à jour")
+                            )
+                            
+                          ),
+                          br(),
+                          checkboxInput(inputId = "ACP_PersoGraph", label = "Personnalisation graphique de l'ACP", value=F),
+                          
+                          conditionalPanel(
+                            condition = "input.ACP_PersoGraph == true",
+                            wellPanel(
+                              p("Sélectionnez le graphique à personnaliser : "),
+                              radioButtons("ACP_selectGraphPerso", label=NULL, choices=c("individus", "variables"), selected="individus", inline=T),
+                              conditionalPanel(
+                                condition = "input.ACP_selectGraphPerso == 'individus'",
+                                wellPanel(
+                                  p("Représenter les ellipses :"),
+                                  checkboxInput(inputId="ACP_ellispe", label="Ellipse ?"),
+                                  tags$br(),
+                                  p("Représenter l'habillage :"),
+                                  radioButtons(inputId="ACP_selectHabillage", label=NULL, inline=T, choices=c("Habillage", "Pas d'habillage"), selected="Pas d'habillage")
+                                  #checkboxInput(inputId="ACP_Habillage", label="Habillage ?")
+                                  
+                                )
+                              )
+                            )
+                          ),
+                        ),
+                        
+                        # Graphiques de l'ACP
+                        mainPanel(
+                          fluidRow(
+                            column(width=6,
+                                   plotOutput("ACP_graphDecompo")
+                            ),
+                            
+                            column(width=6,
+                                   conditionalPanel(
+                                     condition = "input.maj_ACP > 0",
+                                     wellPanel(
+                                       h4("Sélectionnez les deux axes à représenter"),
+                                       numericInput(inputId = "ACP_Axe1", label = NULL, value = 1, min=1, max=5),
+                                       numericInput(inputId = "ACP_Axe2", label = NULL, value = 2, min=1, max=5)
+                                     )
+                                   )
+                            )
+                            
+                          ),
+                          tags$hr(),
+                          fluidRow(
+                            column(width=6,
+                                   plotOutput("ACP_graphInd")
+                            ),
+                            column(width=6,
+                                   plotOutput("ACP_graphVar")
+                            ),
+                            #######tableOutput("Test")
+                          )
+                          
+                        )
                       )
+                      
              ),
              tabPanel("Variabilité et comparaisons")
   )
