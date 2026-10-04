@@ -62,28 +62,34 @@ shinyServer(function(input, output, session) {
   })
   
   ### Graphiques sur le dataset des taux de concentration de métaux dans les ruches
+  
+  #### Définition des palettes de couleur pour le foncier et les ruches
+  palette_foncier <- c(
+    "Forest" = "#39A62B", 
+    "Suburban" = "#1F2BF2", 
+    "Urban"  = "#898AA3", 
+    "Vineyard" = "#9719E6"
+  )
+  
+  palette_ruche <- c(
+    "B1" = "#46CB34",
+    "N1" = "#2D8221",
+    
+    "B20" = "#3943F3",
+    "C17" = "#0C15C6",
+    
+    "C2" = "#A4A4B7",
+    "C21" = "#70718F",
+    
+    "B3" = "#AA43EA",
+    "N10" = "#7C15BC"
+  )
+  
   palette_compar <- reactive({
     if (input$choix_compar_metal=="Location"){
-      c(
-        "Forest" = "#39A62B", 
-        "Suburban" = "#1F2BF2", 
-        "Urban"  = "#898AA3", 
-        "Vineyard" = "#9719E6"
-      )
+      palette_foncier
     } else if (input$choix_compar_metal=="Hive"){
-      c(
-        "B1" = "#46CB34",
-        "N1" = "#2D8221",
-        
-        "B20" = "#3943F3",
-        "C17" = "#0C15C6",
-        
-        "C2" = "#A4A4B7",
-        "C21" = "#70718F",
-        
-        "B3" = "#AA43EA",
-        "N10" = "#7C15BC"
-      )
+      palette_ruche
     }
   })
   
