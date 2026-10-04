@@ -256,7 +256,7 @@ shinyServer(function(input, output, session) {
                                   size=18,
                                   hjust=0.5)
       ) +
-      labs(title = "Poucentages d'occupation des sols pour")+
+      labs(title = "Pourcentages d'occupation des sols pour")+
       facet_wrap(~ Location) 
     
   })
