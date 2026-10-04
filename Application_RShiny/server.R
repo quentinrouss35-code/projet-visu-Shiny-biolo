@@ -7,6 +7,60 @@ shinyServer(function(input, output, session) {
   
   ## Analyse exploratoire
   
+  ##Map des sites
+  output$Carte <- renderLeaflet({
+    url <- "https://geo.api.gouv.fr/departements/33/communes?format=geojson&geometry=contour"
+    communes <- st_read(url)
+    
+    loc <- c("Saint-Magne-de-Castillon", "Le Porge", "Villenave-d'Ornon", "Gujan-Mestras")
+    
+    communes_bees <- communes[communes$nom %in% loc,]
+    
+    communes_bees <- communes_bees |>
+      mutate(
+        type_localisation = case_when(
+          nom == "Saint-Magne-de-Castillon" ~ "Vignoble",
+          nom == "Le Porge"                 ~ "Forêt",
+          nom == "Villenave-d'Ornon"        ~ "Urbain",
+          nom == "Gujan-Mestras"            ~ "Péri-urbain"
+        ),
+        nom_ruche = case_when(
+          nom == "Saint-Magne-de-Castillon" ~ "B3 et N10",
+          nom == "Le Porge"                 ~ "B1 et N1",
+          nom == "Villenave-d'Ornon"        ~ "C2 et C21",
+          nom == "Gujan-Mestras"            ~ "B20 et C17"
+        )
+      )
+    
+    couleurs <- c("Forêt"       = "#39A62B",
+                  "Péri-urbain" = "#1F2BF2",
+                  "Urbain"      = "#898AA3",
+                  "Vignoble"    = "#9719E6")
+    
+    pts <- communes_bees|>
+      st_transform(2154) |>
+      st_point_on_surface() |>
+      st_transform(4326)
+    
+    pts$couleurs <- couleurs[pts$type_localisation]
+    
+    leaflet(pts) |>
+      addTiles() |>
+      addMarkers(
+        label = ~lapply(
+          paste0("<div style='background-color:", couleurs, ";",
+                 "color:white; font-size:16px; padding:6px 10px;",
+                 "border-radius:4px;'>",
+                 "<b>Site :</b> ", type_localisation,
+                 "<br>",
+                 "<b>Ruches :</b> ", nom_ruche),
+          htmltools::HTML
+        )
+      )
+    
+    
+  })
+  
   ### Graphiques sur le dataset des taux de concentration de métaux dans les ruches
   palette_compar <- reactive({
     if (input$choix_compar_metal=="Location"){

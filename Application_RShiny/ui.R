@@ -21,37 +21,99 @@ shinyUI(
   navbarPage("", theme=theme,
              tabPanel("Présentation de l'étude",
                       fluidRow(
-                        column(width = 3,
-                               value_box(
-                                 title = "Nombre de ruches",
-                                 value = n_distinct(metals_bees$Hive),
-                                 showcase = tags$span("🐝", style = "font-size: 4rem;"),
-                                 theme = value_box_theme(bg = "Black", fg = "Yellow")
-                               )),
-                        column(width = 3,
-                               value_box(
-                                 title = "Nombre de sites différents",
-                                 value = n_distinct(metals_bees$Location),
-                                 showcase = tags$span("📍️",style = "font-size: 4rem;"),
-                                 theme = value_box_theme(bg = "Black", fg = "Yellow")
-                               )),
-                        column(width = 3,
-                               value_box(
-                                 title = "Nombre de métaux analysés",
-                                 value = ncol(metals_bees) - 3,
-                                 showcase = tags$span("💎️",style = "font-size: 4rem;"),
-                                 theme = value_box_theme(bg = "Black", fg = "Yellow")
-                               )),
-                        column(width = 3,
-                               value_box(
-                                 title = "Nombre de pesticides analysés",
-                                 value = ncol(pest_bees) - 3,
-                                 showcase = tags$span("🧪️",style = "font-size: 4rem;"),
-                                 theme = value_box_theme(bg = "Black", fg = "Yellow")
-                               ))
-                        
+                        column(12,
+                               layout_column_wrap(
+                                 width = 1/2,
+                                 style = "margin-bottom: 1rem;",
+                                 card(
+                                   style = "background-color: black; color: yellow;",
+                                   card_header("Introduction"),
+                                   card_body(
+                                     p("Les abeilles domestiques sont exposées à de nombreux contaminants, notamment avec l'usage croissant des pesticides et l'augmentation des teneurs en métaux d'origine humaine, qui menacent la biodiversité et les services écosystémiques comme la pollinisation. Grâce à son large rayon de butinage et à sa capacité de stockage, l'abeille domestique constitue un outil précieux pour évaluer les risques environnementaux, son profil d'exposition pouvant fournir des signaux d'alerte précoce d'impacts écologiques plus larges.")
+                                   )
+                                 ),
+                                 card(
+                                   style = "background-color: black; color: yellow;",
+                                   card_header("Problématique"),
+                                   card_body(
+                                     p("Les abeilles domestiques peuvent-elles servir de biosentinelles pour détecter et comparer l'exposition aux pesticides et aux métaux dans des milieux contrastés ?")
+                                   )
+                                 )
+                               )
+                        )
+                      ),
+                      fluidRow(
+                        column(12,
+                               layout_column_wrap(
+                                 width = 1/5,
+                                 value_box(
+                                   title = "Nombre de ruches",
+                                   value = n_distinct(metals_bees$Hive),
+                                   showcase = tags$span("🐝", style = "font-size: 4rem;"),
+                                   theme = value_box_theme(bg = "Black", fg = "Yellow")
+                                 ),
+                                 value_box(
+                                   title = "Nombre de sites différents",
+                                   value = n_distinct(metals_bees$Location),
+                                   showcase = tags$span("📍", style = "font-size: 4rem;"),
+                                   theme = value_box_theme(bg = "Black", fg = "Yellow")
+                                 ),
+                                 value_box(
+                                   title = "Nombre de métaux analysés",
+                                   value = ncol(metals_bees) - 3,
+                                   showcase = tags$span("💎", style = "font-size: 4rem;"),
+                                   theme = value_box_theme(bg = "Black", fg = "Yellow")
+                                 ),
+                                 value_box(
+                                   title = "Nombre de pesticides analysés",
+                                   value = ncol(pest_bees) - 3,
+                                   showcase = tags$span("🧪", style = "font-size: 4rem;"),
+                                   theme = value_box_theme(bg = "Black", fg = "Yellow")
+                                 ),
+                                 value_box(
+                                   title = "Période d'échantillonnage",
+                                   value = "3 mai - 20 octobre 2021",
+                                   showcase = tags$span("🗓️", style = "font-size: 4rem;"),
+                                   theme = value_box_theme(bg = "Black", fg = "Yellow")
+                                 )
+                               )
+                        )
+                      ),
+                      fluidRow(
+                        column(6,
+                               layout_column_wrap(
+                                 width = 1/2,          
+                                 height = "600px",     
+                                 value_box(
+                                   title = "",
+                                   value = "Teneur en métaux",
+                                   "Concentrations en métaux (g/kg ou mg/kg) mesurées par site, par ruche et par date.",
+                                   theme = value_box_theme(bg = "Black", fg = "Yellow")
+                                 ),
+                                 value_box(
+                                   title = "",
+                                   value = "Traitements pesticides appliqués",
+                                   "Dose (g/ha) appliquée par date et par molécule au site du vignoble.",
+                                   theme = value_box_theme(bg = "Black", fg = "Yellow")
+                                 ),
+                                 value_box(
+                                   title = "",
+                                   value = "Résidus de pesticides mesurés",
+                                   "Concentrations en pesticides (ng/g) mesurées par site, par ruche et par date.",
+                                   theme = value_box_theme(bg = "Black", fg = "Yellow")
+                                 ),
+                                 value_box(
+                                   title = "",
+                                   value = "Caractérisation des sites",
+                                   "Part (%) de chaque type d'occupation du sol (urbain, périurbain, forêt et vignoble) autour des 4 sites d'étude.",
+                                   theme = value_box_theme(bg = "Black", fg = "Yellow")
+                                 )
+                               )
+                        ),
+                        column(6,
+                               leafletOutput("Carte", height = "600px")
+                        )
                       )
-                      
              ),
              
              

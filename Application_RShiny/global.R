@@ -10,7 +10,6 @@ library(FactoMineR)
 library(treemapify)
 library(sf)
 library(ggplot2)
-library(quakes)
 library(leaflet)
 library(dplyr)
 
