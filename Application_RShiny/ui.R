@@ -225,8 +225,14 @@ shinyUI(
                       )
              ), 
              tabPanel("Effet des traitements phytosanitaires",
-                         
-               
+                               tabsetPanel(
+                                 tabPanel("Sur les teneurs en métaux",
+                                          fluidRow(column(12, p("À venir")))
+                                 ),
+                                 tabPanel("Sur les résidus de pesticides",
+                                          fluidRow(column(12, p("À venir")))
+                                 )
+                               )
              ),
              
              # second onglet Visualisation
