@@ -8,6 +8,11 @@ library(tidyverse)
 library(DT)
 library(FactoMineR)
 library(treemapify)
+library(sf)
+library(ggplot2)
+library(quakes)
+library(leaflet)
+library(dplyr)
 
 # Importation des jeux de données
 
