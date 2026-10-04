@@ -68,6 +68,53 @@ data_consolidé <- data_consolidé |>
   full_join(metals_bees, by=c("Date", "Location", "Hive"))
 data_consolidé[is.na(data_consolidé)] <- 0
 
+#Nettoyage du df metal et t-test
+df_metals_clean <- as.data.frame(metals_bees)
+
+format_metal_label <- function(metal_name) {
+  metal_name %>%
+    str_remove("\\.g\\.kg|\\.mg\\.kg") %>%
+    str_replace_all("\\.", " ") %>%
+    str_to_title()
+}
+
+df_metals_long <- df_metals_clean %>%
+  pivot_longer(cols = -c(Date, Hive, Location),
+               names_to = "Metal_raw", values_to = "Concentration") %>%
+  mutate(Metal = format_metal_label(Metal_raw))
+#Pivot du data frame pour avoir une colonne "métal" et une colonne "concentration"
+
+df_metals_long$Location <- as.factor(df_metals_long$Location)
+levels(df_metals_long$Location) <- gsub("[()]", "", levels(df_metals_long$Location))
+levels(df_metals_long$Location) <- gsub(" ", "_", levels(df_metals_long$Location))
+#supprime toute parenthèse et remplace chaque espace par un underscore
+
+df_metals_long <- df_metals_long %>%
+  mutate(LogConcentration = log(Concentration + 1e-6))
+
+res_t_test_intra_hive <- data.frame()
+
+for (loc in unique(as.character(df_metals_long$Location))){
+  for (m in unique(df_metals_long$Metal)){
+    d <- subset(df_metals_long, Location==loc & Metal==m)
+    d$Hive <- droplevels(factor(d$Hive))
+    t <- t.test(LogConcentration ~ Hive, data=d)
+    res_t_test_intra_hive <- rbind(res_t_test_intra_hive, data.frame(
+      Location = loc,
+      Metal = m,
+      estimate = unname(t$estimate[2]-t$estimate[1]),
+      lower    = -t$conf.int[2],
+      upper    = -t$conf.int[1],
+      p        = t$p.value
+    ))
+  }
+}
+res_t_test_intra_hive$Significant <- res_t_test_intra_hive$p < 0.05
+res_t_test_intra_hive$Metal <- factor(res_t_test_intra_hive$Metal, levels = rev(sort(unique(res_t_test_intra_hive$Metal))))
+res_t_test_intra_hive <- res_t_test_intra_hive %>%
+  mutate(Signif = factor(ifelse(p < 0.05, "p < 0.05", "p ≥ 0.05"),
+                         levels = c("p ≥ 0.05", "p < 0.05")))
+
 
 
 
