@@ -130,7 +130,7 @@ shinyUI(
                                                                                               choices = unique(soil_occup$Location), 
                                                                                               selected="Urban", inline=TRUE)),
                                                         column(width = 12, dataTableOutput("data_table_soil"))),
-                                                      column(width = 3, downloadButton("downloadData_soil", "Télécharger les données"))
+                                                      column(width = 3, downloadButton("downloadData_soil", "Télécharger le tableau"))
                                              ),
                                              tabPanel("Graphiques",
                                                       fluidRow(
@@ -153,7 +153,7 @@ shinyUI(
                                                                                        choices = unique(colnames(treat_pest[,1:2])), 
                                                                                        selected="Date", inline=TRUE)),
                                                         dataTableOutput("data_table_treat"),
-                                                        column(width = 3, downloadButton("downloadTreat_pest", "Télécharger les données"))
+                                                        column(width = 3, downloadButton("downloadTreat_pest", "Télécharger le tableau"))
                                                       )
                                              ),
                                              tabPanel("Frise",
@@ -170,7 +170,7 @@ shinyUI(
                                                                     "Enlever les lignes ne contenant que des 0",
                                                                     value = FALSE, width='100%'),
                                                       dataTableOutput("table_Pest"),
-                                                      column(width = 12, downloadButton("downloadData_pest", "Télécharger les données"))
+                                                      column(width = 12, downloadButton("downloadData_pest", "Télécharger le tableau"))
                                              )
                                  )
                         ),
@@ -182,7 +182,7 @@ shinyUI(
                                                                                              choices = c("Tous",l_metaux), 
                                                                                              selected= "Tous", multiple=T)),
                                                               dataTableOutput("table_Metaux"),
-                                                              column(width = 12, downloadButton("downloadData_metal", "Télécharger les données"))
+                                                              column(width = 12, downloadButton("downloadData_metal", "Télécharger le tableau"))
                                              ),
                                              tabPanel("Graphiques",
                                                       fluidRow(
@@ -343,6 +343,20 @@ shinyUI(
                       )
                       
              ),
-             tabPanel("Variabilité et comparaisons")
+             tabPanel("Variabilité et comparaisons",
+                      navlistPanel( widths = c(2, 10),
+                                    tabPanel("Variabilité intra site",
+                                             fluidRow(
+                                               column(width=12, div(plotlyOutput("tTestIntraRuche"
+                                               )),style = "margin-bottom: 275px;"),
+                                               column(width=12, card(
+                                                 style = "background-color: black; color: white;",
+                                                 card_header("Tests T intra sites"),
+                                                 card_body(
+                                                   p("Différence en log entre les deux ruches d'un même site (2e − 1re ruche), avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05, non corrigée pour les tests multiples).")
+                                                 )))
+                                             ),
+                                             tabPanel("Variabilité inter site")))
+             )
   )
 )

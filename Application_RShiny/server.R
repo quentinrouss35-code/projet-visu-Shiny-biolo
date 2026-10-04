@@ -365,4 +365,32 @@ shinyServer(function(input, output, session) {
     )
   })
   
+  
+  #Tests de student intra ruche 
+  
+  output$tTestIntraRuche <- renderPlotly({
+    g <- ggplot(res_t_test_intra_hive, aes(x=estimate, y=Metal))+
+      geom_vline(xintercept=0, linetype="dashed")+
+      geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.2, color = "grey50") +
+      geom_point(aes(color=Signif), size=2.5)+
+      scale_color_manual(values = c("p ≥ 0.05" = "#7A8793", "p < 0.05" = "#D1495B"),
+                         name = NULL)+
+      facet_wrap(~Location)+
+      labs(x="Log différence entre ruches intra-site", y=NULL)+
+      theme_minimal(base_size = 13) +
+      theme(
+        strip.text         = element_text(face = "bold", size = 13),
+        panel.grid.minor   = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_line(color = "grey92"),
+        axis.title.x       = element_text(margin = margin(t = 10)),
+        panel.spacing      = unit(1.2, "lines")
+      )
+    ggplotly(g, tooltip = "text", height = 650) %>%
+      layout(legend = list(orientation = "h", x = 0.5, xanchor = "center", y = -0.12)) %>%
+      config(displaylogo = FALSE,
+             modeBarButtonsToRemove = c("select2d", "lasso2d", "autoScale2d"))
+    
+  })
+  
 })
