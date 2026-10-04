@@ -224,13 +224,18 @@ shinyUI(
                         ),
                       )
              ), 
+             tabPanel("Effet des traitements phytosanitaires",
+                         
+               
+             ),
              
              # second onglet Visualisation
-             tabPanel("ACP", 
+             tabPanel("Profils de contamination", 
                       # Sidebar with a slider input for number of bins 
                       fluidRow(
                         dataTableOutput("table_Test")
                       )
-             )
+             ),
+             tabPanel("Variabilité et comparaisons")
   )
 )
