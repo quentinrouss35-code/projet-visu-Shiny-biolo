@@ -227,7 +227,16 @@ shinyUI(
              tabPanel("Effet des traitements phytosanitaires",
                                tabsetPanel(
                                  tabPanel("Sur les teneurs en métaux",
-                                          fluidRow(column(12, p("À venir")))
+                                          fluidRow(
+                                            column(6, wellPanel(
+                                              selectInput("tr_metaux", "Métaux à représenter (1 graphique par métal, site Vignoble) :",
+                                                          choices = l_metaux, selected = l_metaux[1], multiple = TRUE))),
+                                            column(6, wellPanel(
+                                              checkboxGroupInput("tr_mols", "Molécules de traitement à afficher :",
+                                                                 choices = sort(unique(trimws(treat_pest$Molecule))),
+                                                                 selected = sort(unique(trimws(treat_pest$Molecule))))))
+                                          ),
+                                          uiOutput("plots_metaux_trait")
                                  ),
                                  tabPanel("Sur les résidus de pesticides",
                                           fluidRow(column(12, p("À venir")))
