@@ -370,17 +370,25 @@ shinyServer(function(input, output, session) {
   })
   
   
-  #Tests de student intra ruche 
+  #Tests de student intra site 
   
-  output$tTestIntraRuche <- renderPlotly({
-    g <- ggplot(res_t_test_intra_hive, aes(x=estimate, y=Metal))+
-      geom_vline(xintercept=0, linetype="dashed")+
-      geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.2, color = "grey50") +
-      geom_point(aes(color=Signif), size=2.5)+
-      scale_color_manual(values = c("p ≥ 0.05" = "#7A8793", "p < 0.05" = "#D1495B"),
-                         name = NULL)+
-      facet_wrap(~Location)+
-      labs(x="Log différence entre ruches intra-site", y=NULL)+
+  output$tTestIntraSite <- renderPlotly({
+    
+    df_plot <- res_t_test_intra_loc
+    df_plot$Signif <- ifelse(df_plot$p < 0.05, "p < 0.05", "p ≥ 0.05")
+    
+    g <- ggplot(df_plot, aes(x = estimate, y = Metal)) +
+      geom_vline(xintercept = 0, linetype = "dashed") +
+      #barre 0
+      geom_errorbarh(aes(xmin = lower, xmax = upper), width = 0.2, color = "grey50") +
+      #barre d'erreur horizontale
+      geom_point(aes(color = Signif), size = 2.5) +
+      scale_color_manual(
+        values = c("p ≥ 0.05" = "#7A8793", "p < 0.05" = "#D1495B"),
+        name = NULL
+      ) +
+      facet_wrap(~Location) +
+      labs(x = "Log différence entre ruches intra-site", y = NULL) +
       theme_minimal(base_size = 13) +
       theme(
         strip.text         = element_text(face = "bold", size = 13),
@@ -390,12 +398,44 @@ shinyServer(function(input, output, session) {
         axis.title.x       = element_text(margin = margin(t = 10)),
         panel.spacing      = unit(1.2, "lines")
       )
+    
     ggplotly(g, tooltip = "text", height = 650) %>%
       layout(legend = list(orientation = "h", x = 0.5, xanchor = "center", y = -0.12)) %>%
-      config(displaylogo = FALSE,
-             modeBarButtonsToRemove = c("select2d", "lasso2d", "autoScale2d"))
-    
+      config(displaylogo = FALSE, modeBarButtonsToRemove = c("select2d", "lasso2d", "autoScale2d"))
   })
+  
+  #Tests posthoc inter site 
+  
+  output$TestInterSite <- renderPlotly({
+    
+    g <- ggplot(results_all, aes(x = estimate, y = Metal)) +
+      geom_point(aes(color = Significant), size = 3) +
+      geom_errorbarh(aes(xmin = estimate - 1.96 * SE, xmax = estimate + 1.96 * SE),
+                     width = 0.15, color = "grey50") +
+      geom_vline(xintercept = 0, linetype = "dashed", color = "grey40") +
+      scale_color_manual(
+        values = c("TRUE" = "#D1495B", "FALSE" = "#7A8793"), # Harmonisé avec ton autre graphique
+        labels = c("TRUE" = "p < 0.05", "FALSE" = "p ≥ 0.05"),
+        name = NULL
+      ) +
+      facet_wrap(~ Contrast_clean, ncol = 3, scales = "free_x") +
+      labs(x = "Log différence inter-sites", y = NULL) +
+      theme_minimal(base_size = 13) +
+      theme(
+        legend.position = "bottom",
+        strip.text = element_text(face = "bold", size = 12),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_line(color = "grey92"),
+        axis.title.x = element_text(margin = margin(t = 10)),
+        panel.spacing = unit(1.2, "lines")
+      )
+    
+    ggplotly(g, tooltip = "text", height = 750) %>%
+      layout(legend = list(orientation = "h", x = 0.5, xanchor = "center", y = -0.15)) %>%
+      config(displaylogo = FALSE, modeBarButtonsToRemove = c("select2d", "lasso2d", "autoScale2d"))
+  })
+  
   output$plots_metaux_trait <- renderUI({
     req(input$tr_metaux)
     plotlyOutput("plot_trait_all", height = paste0(320 * length(input$tr_metaux), "px"))
