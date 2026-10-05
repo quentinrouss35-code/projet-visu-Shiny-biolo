@@ -18,6 +18,8 @@ library(dplyr)
 library(factoextra)
 library(shinydashboard)
 library(rclipboard)
+library(emmeans)
+library(lme4)
 
 
 # Importation des jeux de données
@@ -69,7 +71,7 @@ data_consolidé <- data_consolidé |>
   full_join(metals_bees, by=c("Date", "Location", "Hive"))
 data_consolidé[is.na(data_consolidé)] <- 0
 
-#Nettoyage du df metal et t-test
+#Nettoyage du df metal et tests variabilité métaux inter intra
 df_metals_clean <- as.data.frame(metals_bees)
 
 format_metal_label <- function(metal_name) {
@@ -93,31 +95,79 @@ levels(df_metals_long$Location) <- gsub(" ", "_", levels(df_metals_long$Location
 df_metals_long <- df_metals_long %>%
   mutate(LogConcentration = log(Concentration + 1e-6))
 
-res_t_test_intra_hive <- data.frame()
+#intra site 
+res_t_test_intra_loc <- data.frame()
 
-for (loc in unique(as.character(df_metals_long$Location))){
-  for (m in unique(df_metals_long$Metal)){
-    d <- subset(df_metals_long, Location==loc & Metal==m)
-    d$Hive <- droplevels(factor(d$Hive))
-    t <- t.test(LogConcentration ~ Hive, data=d)
-    res_t_test_intra_hive <- rbind(res_t_test_intra_hive, data.frame(
-      Location = loc,
-      Metal = m,
-      estimate = unname(t$estimate[2]-t$estimate[1]),
-      lower    = -t$conf.int[2],
-      upper    = -t$conf.int[1],
-      p        = t$p.value
+for (loc in unique(as.character(df_metals_long$Location))) {
+  for (m in unique(df_metals_long$Metal)) {
+    d <- df_metals_long %>%
+      filter(Location == loc, Metal == m) %>%
+      select(Date, Hive, LogConcentration) %>%
+      pivot_wider(names_from = Hive, values_from = LogConcentration) %>%
+      drop_na()
+    
+    t <- t.test(d[[3]], d[[2]], paired = TRUE)   # ruche 2 - ruche 1
+    res_t_test_intra_loc <- rbind(res_t_test_intra_loc, data.frame(
+      Location = loc, Metal = m,
+      estimate = unname(t$estimate),
+      lower = t$conf.int[1], upper = t$conf.int[2],
+      p = t$p.value
     ))
   }
 }
-res_t_test_intra_hive$Significant <- res_t_test_intra_hive$p < 0.05
-res_t_test_intra_hive$Metal <- factor(res_t_test_intra_hive$Metal, levels = rev(sort(unique(res_t_test_intra_hive$Metal))))
-res_t_test_intra_hive <- res_t_test_intra_hive %>%
-  mutate(Signif = factor(ifelse(p < 0.05, "p < 0.05", "p ≥ 0.05"),
-                         levels = c("p ≥ 0.05", "p < 0.05")))
 
+#inter site 
+modele_mixte <- lmer(LogConcentration ~ Metal * Location + (1 | Hive),
+                     data = df_metals_long)
 
+str(df_metals_long)
 
+contrast_vin <- list(
+  "Vineyard vs Forest"   = c(-1, 0, 0, 1),
+  "Vineyard vs Suburban" = c(0, -1, 0, 1),
+  "Vineyard vs Urban"    = c(0, 0, -1, 1)
+)
+contrast_other <- list(
+  "Urban vs Suburban"  = c(0, -1, 1, 0),
+  "Urban vs Forest"    = c(-1, 0, 1, 0),
+  "Suburban vs Forest" = c(-1, 1, 0, 0)
+)
+metaux <- unique(df_metals_long$Metal)
+
+results_cmp <- lapply(metaux, function(m) {
+  emm_metal <- emmeans(modele_mixte, ~ Location, at = list(Metal = m))
+  contr <- contrast(emm_metal, method = contrast_vin, adjust = "none")
+  dfc <- as.data.frame(contr)
+  dfc$Metal <- m
+  return(dfc)
+}) %>% bind_rows() %>%
+  mutate(Significant = p.value < 0.05,
+         Metal = factor(Metal, levels = rev(sort(unique(Metal)))))
+
+results_extra_cmp <- lapply(metaux, function(m){
+  emm_metal <- emmeans(modele_mixte, ~ Location, at = list(Metal = m))
+  contr <- contrast(emm_metal, method = contrast_other, adjust = "none")
+  dfc <- as.data.frame(contr)
+  dfc$Metal <- m
+  return(dfc)
+}) %>% bind_rows() %>%
+  mutate(Significant = p.value < 0.05,
+         Metal = factor(Metal, levels = rev(sort(unique(Metal)))))
+
+results_all <- bind_rows(results_cmp, results_extra_cmp) %>%
+  mutate(
+    Contrast_clean = factor(
+      contrast,
+      levels = c(
+        "Vineyard vs Forest",
+        "Vineyard vs Suburban",
+        "Vineyard vs Urban",
+        "Urban vs Suburban",
+        "Urban vs Forest",
+        "Suburban vs Forest"
+      )
+    )
+  )
 
 #Récupération des noms de métaux
 l_metaux <- metals_bees |> 

@@ -146,7 +146,6 @@ shinyUI(
                                  tabsetPanel(id = "Onglet_PestTrait",
                                              tabPanel("Tableau de données",
                                                       fluidRow(
-                                                        div(h2("Données de traitement pesticides", style = "color : white"),align="center"),
                                                         column(width = 9, radioButtons(inputId = "vartreat", label = "Voir par : ", 
                                                                                        choices = unique(colnames(treat_pest[,1:2])), 
                                                                                        selected="Date", inline=TRUE)),
@@ -155,7 +154,6 @@ shinyUI(
                                                       )
                                              ),
                                              tabPanel("Frise",
-                                                      div(h2("Données de traitement pesticides", style = "color : white"),align="center"),
                                                       column(width = 12,div(img(src="Frise_treatment.png", title="Popup", width = "80%")), align="center",
                                                              style = "margin-bottom: 30px;")
                                              )
@@ -354,16 +352,32 @@ shinyUI(
                       navlistPanel( widths = c(2, 10),
                                     tabPanel("Variabilité intra site",
                                              fluidRow(
-                                               column(width=12, div(plotlyOutput("tTestIntraRuche"
-                                               )),style = "margin-bottom: 275px;"),
+                                               column(width=12, div(plotlyOutput("tTestIntraSite"
+                                               ),style = "margin-bottom: 275px;")),
                                                column(width=12, card(
                                                  style = "background-color: black; color: white;",
                                                  card_header("Tests T intra sites"),
                                                  card_body(
                                                    p("Différence en log entre les deux ruches d'un même site (2e − 1re ruche), avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05, non corrigée pour les tests multiples).")
                                                  )))
-                                             ),
-                                             tabPanel("Variabilité inter site")))
+                                             )),
+                                    tabPanel("Variabilité inter site",
+                                             fluidRow(
+                                               column(width=12, 
+                                                      div(plotlyOutput("TestInterSite"),
+                                                          style = "margin-bottom: 350px;")),
+                                               column(width=12, card(
+                                                 style = "background-color: black; color: white;",
+                                                 card_header("Tests de comparaison inter sites"),
+                                                 card_body(
+                                                   p("Différence en log entre les deux sites différents (2e − 1re ruche), avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05).")
+                                                 ))
+                                                 
+                                                 
+                                               )
+                                             )
+                                    )      
+                      )
              )
   )
 )
