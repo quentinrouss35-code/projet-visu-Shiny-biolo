@@ -19,6 +19,7 @@ library(factoextra)
 library(shinydashboard)
 library(rclipboard)
 
+
 # Importation des jeux de données
 
   #Métaux
@@ -123,6 +124,38 @@ l_metaux <- metals_bees |>
   select(!Date:Location) |>
   colnames()
 
-#Préparation pour graphes effet du traitement sur les résidus de pesticides mesurés
+#Préparation pour graphes effet du traitement sur les métaux 
 to_date <- function(x) if (inherits(x, "Date")) x else as.Date(x, format = "%d/%m/%Y")
+
+treat_clean <- treat_pest |>
+  mutate(Date = to_date(Date), Molecule = trimws(Molecule))
+
+mols_all <- sort(unique(treat_clean$Molecule))
+col_mols <- setNames(hcl.colors(length(mols_all), "Dark 3"), mols_all) 
+
+#prétraitement données effet du traitement sur les résidus de pesticides mesurés
+SITE    <- "Vineyard"   # "Vineyard", "Suburban", "Urban" ou "Forest"
+MAX_LAG <- 60           # fenêtre après traitement (jours)
+
+residus <- pest_bees |>
+  filter(Location == SITE) |>
+  pivot_longer(-c(Hive, Location, Date),
+               names_to = "Molecule", values_to = "conc") |>
+  mutate(Molecule = tolower(trimws(str_remove(Molecule, "^Pest_")))) |>  # "Pest_dimethomorph " -> "dimethomorph"
+  group_by(Molecule, Date) |>
+  summarise(conc = max(conc, na.rm = TRUE), .groups = "drop")
+
+traitements <- treat_pest |>
+  mutate(Molecule = tolower(trimws(as.character(Molecule)))) |>
+  distinct(Molecule, Date) |>
+  rename(Date_trait = Date)
+
+df_pesti <- inner_join(traitements, residus, by = "Molecule",
+                 relationship = "many-to-many") |>
+  mutate(delai = as.numeric(Date - Date_trait)) |>
+  filter(delai >= 0, delai <= MAX_LAG) |>
+  mutate(event = paste0(Molecule, " (", format(Date_trait, "%d/%m"), ")"),
+         event = fct_reorder(event, Date_trait, .desc = TRUE))  # ancien en haut
+
+df_pesti <- df_pesti |> mutate(detecte = conc > 0)
 

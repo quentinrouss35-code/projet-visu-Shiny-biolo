@@ -1,5 +1,3 @@
-
-
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
@@ -403,11 +401,6 @@ shinyServer(function(input, output, session) {
     plotlyOutput("plot_trait_all", height = paste0(320 * length(input$tr_metaux), "px"))
   })
   
-  treat_clean <- treat_pest |>
-    mutate(Date = to_date(Date), Molecule = trimws(Molecule))
-  
-  mols_all <- sort(unique(treat_clean$Molecule))
-  col_mols <- setNames(hcl.colors(length(mols_all), "Dark 3"), mols_all) 
   
   output$plot_trait_all <- renderPlotly({
     
@@ -416,7 +409,7 @@ shinyServer(function(input, output, session) {
     trait  <- treat_clean |> filter(Molecule %in% input$tr_mols)
     mols_i <- as.character(trait$Molecule)
     
-    # Un graphique par métal, empilés avec un axe des dates partagé (shareX)
+    # Un graphique par métal, empilés avec un axe des dates partagé 
     plots <- lapply(seq_along(input$tr_metaux), function(k) {
       metal <- input$tr_metaux[k]
       
@@ -461,5 +454,23 @@ shinyServer(function(input, output, session) {
         hovermode = "closest",
         legend = list(orientation = "h", y = -0.08)
       )
+  })
+  output$tr_pesti <- renderPlot({
+    ggplot(df_pesti, aes(x = delai, y = event)) +
+      geom_vline(xintercept = 0, linetype = "dashed", colour = "grey30") +
+      geom_point(aes(fill = detecte, colour = detecte), shape = 21, size = 5, stroke = 1) +
+      scale_fill_manual(name = NULL,
+                        values = c("TRUE" = "orange", "FALSE" = "white"),
+                        labels = c("TRUE" = "Positif", "FALSE" = "Négatif")) +
+      scale_colour_manual(name = NULL,
+                          values = c("TRUE" = "orange", "FALSE" = "grey50"),
+                          labels = c("TRUE" = "Positif", "FALSE" = "Négatif")) +
+      labs(title = "Détection de résidus de pesticides chez les abeilles après traitement sur le site du vignoble",
+           x = "Nombre de jours après l'application", y = NULL) +
+      theme_minimal(base_size = 14) +
+      theme(panel.grid.major.x = element_line(colour = "grey85", linewidth = 0.4),
+            panel.grid.major.y = element_line(colour = "grey85", linewidth = 0.4),
+            panel.grid.minor   = element_blank(),
+            legend.position    = "top")
   })
 })

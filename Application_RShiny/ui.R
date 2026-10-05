@@ -1,5 +1,3 @@
-
-
 theme <- bs_theme(
   # Controls the default grayscale palette
   bg = "#202123", fg = "white",
@@ -229,7 +227,7 @@ shinyUI(
                                  tabPanel("Sur les teneurs en métaux",
                                           fluidRow(
                                             column(6, wellPanel(
-                                              selectInput("tr_metaux", "Métaux à représenter (1 graphique par métal, site Vignoble) :",
+                                              selectInput("tr_metaux", "Métaux à représenter :",
                                                           choices = l_metaux, selected = l_metaux[1], multiple = TRUE))),
                                             column(6, wellPanel(
                                               checkboxGroupInput("tr_mols", "Molécules de traitement à afficher :",
@@ -239,7 +237,7 @@ shinyUI(
                                           uiOutput("plots_metaux_trait")
                                  ),
                                  tabPanel("Sur les résidus de pesticides",
-                                          fluidRow(column(12, p("À venir")))
+                                          plotOutput("tr_pesti")
                                  )
                                )
              ),
