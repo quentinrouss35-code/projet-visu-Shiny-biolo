@@ -398,5 +398,68 @@ shinyServer(function(input, output, session) {
              modeBarButtonsToRemove = c("select2d", "lasso2d", "autoScale2d"))
     
   })
+  output$plots_metaux_trait <- renderUI({
+    req(input$tr_metaux)
+    plotlyOutput("plot_trait_all", height = paste0(320 * length(input$tr_metaux), "px"))
+  })
   
+  treat_clean <- treat_pest |>
+    mutate(Date = to_date(Date), Molecule = trimws(Molecule))
+  
+  mols_all <- sort(unique(treat_clean$Molecule))
+  col_mols <- setNames(hcl.colors(length(mols_all), "Dark 3"), mols_all) 
+  
+  output$plot_trait_all <- renderPlotly({
+    
+    req(input$tr_metaux)
+    
+    trait  <- treat_clean |> filter(Molecule %in% input$tr_mols)
+    mols_i <- as.character(trait$Molecule)
+    
+    # Un graphique par métal, empilés avec un axe des dates partagé (shareX)
+    plots <- lapply(seq_along(input$tr_metaux), function(k) {
+      metal <- input$tr_metaux[k]
+      
+      # Une seule courbe pour le site : moyenne des ruches à chaque date
+      d <- metals_bees |>
+        filter(Location == "Vineyard") |>
+        rename(Metal = all_of(metal)) |>
+        group_by(Date) |>
+        summarize(Metal = mean(Metal, na.rm = TRUE), .groups = "drop")
+      
+      y_min <- min(d$Metal, na.rm = TRUE)
+      y_max <- max(d$Metal, na.rm = TRUE)
+      
+      p <- plot_ly(d, x = ~Date, y = ~Metal,
+                   type = "scatter", mode = "lines+markers",
+                   line = list(color = "#9719E6"), marker = list(color = "#9719E6"),
+                   name = "Vignoble (moyenne des ruches)",
+                   legendgroup = "site", showlegend = (k == 1),
+                   hoverinfo = "none")
+      
+      # Une ligne verticale par traitement coché
+      for (i in seq_len(nrow(trait))) {
+        mol <- mols_i[i]
+        p <- p |> add_trace(
+          x = rep(trait$Date[i], 2), y = c(y_min, y_max),
+          type = "scatter", mode = "lines", inherit = FALSE,
+          line = list(color = col_mols[[mol]], dash = "dash", width = 2),
+          name = mol, legendgroup = mol,
+          showlegend = (k == 1) && !(mol %in% mols_i[seq_len(i - 1)]),  # 1 entrée de légende par molécule
+          text = paste0(mol, "<br>Dose : ", trait$Dose[i], " g/ha"),
+          hoverinfo = "text"
+        )
+      }
+      
+      p |> layout(yaxis = list(title = metal))
+    })
+    
+    subplot(plots, nrows = length(plots), shareX = TRUE, titleY = TRUE, margin = 0.04) |>
+      layout(
+        title = "Évolution des concentrations au site Vignoble",
+        xaxis = list(title = "Date"),
+        hovermode = "closest",
+        legend = list(orientation = "h", y = -0.08)
+      )
+  })
 })

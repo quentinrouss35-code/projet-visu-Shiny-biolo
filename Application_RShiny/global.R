@@ -123,4 +123,6 @@ l_metaux <- metals_bees |>
   select(!Date:Location) |>
   colnames()
 
-message("global.R est exécuté, wd = ", getwd())
+#Préparation pour graphes effet du traitement sur les résidus de pesticides mesurés
+to_date <- function(x) if (inherits(x, "Date")) x else as.Date(x, format = "%d/%m/%Y")
+
