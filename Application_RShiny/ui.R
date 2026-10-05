@@ -1,5 +1,3 @@
-
-
 theme <- bs_theme(
   # Controls the default grayscale palette
   bg = "#202123", fg = "white",

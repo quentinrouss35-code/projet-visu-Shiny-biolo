@@ -19,6 +19,7 @@ library(factoextra)
 library(shinydashboard)
 library(rclipboard)
 
+
 # Importation des jeux de données
 
   #Métaux
