@@ -175,43 +175,61 @@ shinyUI(
                                              tabPanel("Tableau de données",
                                                               column(width = 12, selectInput(inputId = "varmet1",
                                                                                              label = "Métaux : ", 
-                                                                                             choices = c("Tous",l_metaux), 
+                                                                                             choices = c("Tous",colnames(metals_bees)), 
                                                                                              selected= "Tous", multiple=T)),
                                                               dataTableOutput("table_Metaux"),
                                                               column(width = 12, downloadButton("downloadData_metal", "Télécharger le tableau"))
                                              ),
                                              tabPanel("Graphiques",
-                                                      fluidRow(
-                                                        column(width=5,
-                                                               wellPanel(
-                                                                 selectInput(inputId = "choix_metal", label = "Choisissez le métal à représenter",
+                                                      wellPanel(
+                                                        fluidRow(
+                                                          column(width=3,
+                                                                 selectInput(inputId = "choix_metal", label = "Choisissez le métal :",
                                                                              choices = l_metaux,
                                                                              multiple=F
                                                                  )
-                                                               )
-                                                        ),
-                                                        column(width=5,
-                                                               wellPanel(
-                                                                 selectInput(inputId = "choix_compar_metal", label = "Choisissez la strate (donner meilleur nom)",
+                                                          ),
+                                                          column(width=3,
+                                                                 selectInput(inputId = "choix_compar_metal", label = "Choisissez la strate :",
                                                                              choices = c("Location", "Hive"),
                                                                              multiple=F
-                                                                 )                                         
-                                                               )
+                                                                             
+                                                                 )
+                                                          ),
+                                                          column(width=3,
+                                                                 dateRangeInput(inputId = "Explo_selectDate", label = "Choisissez une période :",
+                                                                                start = min(metals_bees$Date), end = max(metals_bees$Date), 
+                                                                                min = min(metals_bees$Date), max = max(metals_bees$Date), 
+                                                                                format = "dd-mm-yyyy", language = "fr", separator = " à "),
+                                                          ),
+                                                          column(width=3,
+                                                                 checkboxGroupInput(inputId = "cases_fonciers", label = "Sélectionnez un(des) foncier(s) :", selected = unique(metals_bees$Location),
+                                                                                    choices = unique(metals_bees$Location), inline=T)
+                                                          )
                                                         ),
-                                                        column(width=2,
-                                                               br(),
-                                                               actionButton("maj_g_explo", "Mettre à jour")
-                                                        )
+                                                        #tags$hr(),
+                                                        #fluidRow(
+                                                          #actionButton("maj_g_explo", "Mettre à jour")
+                                                        #)
+                                                        
                                                       ),
+                                                      tags$br(),
                                                       fluidRow(
-                                                        column(width=1,
-                                                               checkboxGroupInput(inputId = "cases_fonciers", label = "Sélectionnez un(des) foncier(s) :", selected = c("Forest", "Suburban", "Urban", "Vineyard"),
-                                                                                  choices = c("Forêt" = "Forest", "Banlieue" = "Suburban", "Urbain" = "Urban", "Vignoble" = "Vineyard"))),
                                                         column(width=5,
-                                                               plotlyOutput("boxPlot_Metal")
+                                                               tabsetPanel(
+                                                                 tabPanel(h4(textOutput("titre_boxPlotMetal"), style = "color: yellow; text-align: center;"),
+                                                                          plotlyOutput("boxPlot_Metal")
+                                                                 )
+                                                               )
+                                                            
                                                         ),
-                                                        column(width=6,
-                                                               plotlyOutput("Tempo_Metal")
+                                                        column(width=7,
+                                                               tabsetPanel(
+                                                                 tabPanel(h4(textOutput("titre_TempoMetal"), style = "color: yellow; text-align: center;"),
+                                                                          plotlyOutput("Tempo_Metal")
+                                                                 )
+                                                               )
+                                                               
                                                         )
                                                       )
                                              )
@@ -281,12 +299,19 @@ shinyUI(
                                   checkboxGroupInput(inputId = "ACP_selectQuantiSup", label=NULL, inline=T,
                                                      choices = NULL)
                               ),
+                              tags$hr(),
                               p("Sélectionnez les variables qualitatives supplémentaires :"),
                               div(class="multicol",
-                                  checkboxGroupInput(inputId = "ACP_selectQualiSup", label=NULL, inline=T, selected=c("Location"),
+                                  checkboxGroupInput(inputId = "ACP_selectQualiSup", label=NULL, inline=T,
                                                      choices = colnames(metals_bees[, 1:3]))
                               ),
-                              actionButton("maj_ACP", "Mettre à jour")
+                              tags$hr(),
+                              fluidRow(
+                                column(width=12, align="center",
+                                       actionButton("maj_ACP", "Mettre à jour")
+                                )
+                              )
+                              
                             )
                             
                           ),

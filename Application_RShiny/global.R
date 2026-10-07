@@ -20,7 +20,7 @@ library(shinydashboard)
 library(rclipboard)
 library(emmeans)
 library(lme4)
-
+library(stringr)
 
 # Importation des jeux de données
 
