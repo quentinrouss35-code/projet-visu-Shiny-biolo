@@ -91,18 +91,29 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  metals_bees_explo <- reactive({
+    df <- metals_bees |> 
+      filter(Location %in% input$cases_fonciers,
+             Date >= input$Explo_selectDate[1], Date <= input$Explo_selectDate[2]) |> 
+      arrange(Location) |> 
+      rename(Metal = .data[[input$choix_metal]], Var_Compar = .data[[input$choix_compar_metal]])
+      
+    df
+  })
   
   
-  
+  output$titre_boxPlotMetal <- renderText({
+    metal <- tolower(str_split(input$choix_metal, " ")[[1]][1])
+    conc <- str_split(input$choix_metal, " ")[[1]][2]
+    paste('Boîte à moustaches de la concentration de', metal, '(', conc, ')', 'selon', ifelse(input$choix_compar_metal=='Location', 'le foncier', 'les ruches d\'abeilles'))
+  })
   output$boxPlot_Metal <- renderPlotly({
-    input$maj_g_explo
-    metals_bees <- metals_bees |> 
-      filter(Location %in% input$cases_fonciers)
+    #input$maj_g_explo
+    #df <- ifelse(input$maj_g_explo==T, metals_bees_explo(), metals_bees |> filter(Location %in% input$cases_fonciers))
+    df <- metals_bees_explo()
       
     isolate({
-      metals_bees <- metals_bees |> 
-        arrange(Location) |> 
-        rename(Metal = .data[[input$choix_metal]], Var_Compar = .data[[input$choix_compar_metal]]) |> 
+      metals_bees <- df |> 
         select(Metal, Var_Compar)
       
       ## Boxplot des taux du métal choisi selon le milieu
@@ -113,25 +124,34 @@ shinyServer(function(input, output, session) {
               type = 'box', 
               colors=palette_compar()) |> 
         layout(
-          title = paste("Boîte à moustaches de la concentration de", input$choix_metal, "selon", ifelse(input$choix_compar_metal=="Location", "le foncier", "les ruches d'abeilles")),
+          #title = paste("Boîte à moustaches de la concentration de", input$choix_metal, "selon", ifelse(input$choix_compar_metal=="Location", "le foncier", "les ruches d'abeilles")),
           yaxis = list(title = input$choix_metal), 
           xaxis = list(title = input$choix_compar_metal),
-          hovermode = "x unified",
+          #hovermode = "x unified",
           legend = list(orientation = "h", y = -0.2)
         )
       
     })
   })
   
+  output$titre_TempoMetal <- renderText({
+    metal <- tolower(str_split(input$choix_metal, " ")[[1]][1])
+    conc <- str_split(input$choix_metal, " ")[[1]][2]
+    paste('Evolution temporelle de la concentration de', metal, '(', conc, ')', 'selon', ifelse(input$choix_compar_metal=='Location', 'le foncier', 'les ruches d\'abeilles'))
+  })
   output$Tempo_Metal <- renderPlotly({
     input$maj_g_explo
-    metals_bees <- metals_bees |> 
-      filter(Location %in% input$cases_fonciers)
+    df <- metals_bees_explo()
     
     isolate({
-      metals_bees <- metals_bees |>
-        arrange(Location) |> 
-        rename(Metal = .data[[input$choix_metal]], Var_Compar = .data[[input$choix_compar_metal]]) |>
+      #metals_bees <- metals_bees |>
+        #arrange(Location) |> 
+        #rename(Metal = .data[[input$choix_metal]], Var_Compar = .data[[input$choix_compar_metal]]) |>
+        #group_by(Var_Compar, Date) |>
+        #summarize(Metal = mean(Metal)) |> 
+        #select(Var_Compar, Metal, Date)
+      
+      metals_bees <- df |> 
         group_by(Var_Compar, Date) |>
         summarize(Metal = mean(Metal)) |> 
         select(Var_Compar, Metal, Date)
@@ -144,9 +164,9 @@ shinyServer(function(input, output, session) {
               mode = 'lines+markers',
               colors=palette_compar()) |> 
         layout(
-          title = paste("Evolution temporelle de la concentration de", input$choix_metal, "selon", ifelse(input$choix_compar_metal=="Location", "le foncier", "les ruches d'abeilles")),
+          #title = paste("Evolution temporelle de la concentration de", input$choix_metal, "selon", ifelse(input$choix_compar_metal=="Location", "le foncier", "les ruches d'abeilles")),
           yaxis = list(title = input$choix_metal), 
-          xaxis = list(title = "Date"),
+          xaxis = list(title = "Date of measurement"),
           hovermode = "x unified",
           legend = list(orientation = "h", y = -0.2)
         )
@@ -291,10 +311,6 @@ shinyServer(function(input, output, session) {
       d <- data_mod_treat()
       write.csv(d, con)
     })
-  
-  output$table_Test <- renderDataTable({
-    datatable(data_consolidé)
-  })
   
   
   
