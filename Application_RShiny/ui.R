@@ -122,28 +122,29 @@ shinyUI(
                         tabPanel("Occupation des sols sur un rayon de 3km",
                                  tabsetPanel(id = "Onglet_OccupSol",
                                              tabPanel("Tableau de données",
+                                                      wellPanel(
                                                       fluidRow(
                                                         column(width = 12, checkboxGroupInput(inputId = "varloc1",
                                                                                               label = "Variable : ", 
                                                                                               choices = unique(soil_occup$Location), 
-                                                                                              selected=unique(soil_occup$Location), inline=TRUE)),
-                                                        column(width = 12, dataTableOutput("data_table_soil"))),
-                                                      column(width = 3, downloadButton("downloadData_soil", "Télécharger le tableau"))
-                                             ),
+                                                                                              selected=unique(soil_occup$Location), inline=TRUE)))),
+                                                        column(width = 12, dataTableOutput("data_table_soil")),
+                                                      column(width = 3, downloadButton("downloadData_soil", "Télécharger le tableau"))),
                                              tabPanel("Graphiques",
+                                                      wellPanel(
                                                       fluidRow(
                                                         column(width = 2, checkboxGroupInput(inputId = "varloc2", label = "Variable : ", 
                                                                                              choices = unique(soil_occup$Location), 
-                                                                                             selected="Urban")),
+                                                                                             selected="Urban")))),
                                                         column(width = 10, div(
                                                           style = "margin-bottom: 30px;",
-                                                          plotOutput("squarePie"))))
-                                             )
-                                 )
-                        ),
+                                                          plotOutput("squarePie")))))
+                                 ),
+                                             
                         tabPanel("Traitement phytosanitaire dans les vignobles",
                                  tabsetPanel(id = "Onglet_PestTrait",
                                              tabPanel("Tableau de données",
+                                                      wellPanel(
                                                       fluidRow(
                                                         column(width = 2, radioButtons(inputId = "vartreat", label = "Voir par : ", 
                                                                                        choices = unique(colnames(treat_pest[,1:2])), 
@@ -155,10 +156,9 @@ shinyUI(
                                                                               format = "dd-mm-yyyy", language = "fr", separator = " à ")),
                                                         column(width=3, offset=1,
                                                                selectInput(inputId="moleculeTrait", label=("Selectionnez une molécule :"),
-                                                                           choices=c(as.character(l_molecules),"Toutes"), selected="Toutes", multiple=T)),
+                                                                           choices=c(as.character(l_molecules),"Toutes"), selected="Toutes", multiple=T)))),
                                                         dataTableOutput("data_table_treat"),
-                                                        column(width = 3, downloadButton("downloadTreat_pest", "Télécharger le tableau")))         
-                                             ),
+                                                        column(width = 3, downloadButton("downloadTreat_pest", "Télécharger le tableau"))),
                                              tabPanel("Frise",
                                                       column(width = 12,div(img(src="Frise_treatment.png", width = "80%")), align="center",
                                                              style = "margin-bottom: 30px;")
@@ -170,6 +170,7 @@ shinyUI(
                         tabPanel("Pesticides détectés",
                                  tabsetPanel(id = "Onglet_pest",
                                              tabPanel("Tableau de données",
+                                                      wellPanel(
                                                       fluidRow(
                                                         column(width=4,checkboxInput("filtre_zero_pest",
                                                                                      "Enlever les lignes ne contenant que des 0",
@@ -191,10 +192,10 @@ shinyUI(
                                                                                           label="Sélectionnez les location",
                                                                                           choices=unique(pest_bees$Location),
                                                                                           selected=unique(pest_bees$Location)
-                                                        )),
+                                                        )))),
                                                         dataTableOutput("table_Pest"),
                                                         column(width = 12, downloadButton("downloadData_pest", "Télécharger le tableau"))
-                                                      )),
+                                                      ),
                                              tabPanel("Résumé",
                                                       verbatimTextOutput("SummaryPest"))
                                  )
@@ -202,6 +203,7 @@ shinyUI(
                         tabPanel("Métaux détectés",
                                  tabsetPanel(id = "Onglet_metaux",
                                              tabPanel("Tableau de données",
+                                                      wellPanel(
                                                       fluidRow(
                                                         column(width = 6, selectInput(inputId = "varmet1",
                                                                                       label = "Métaux : ", 
@@ -223,9 +225,9 @@ shinyUI(
                                                                                           label="Sélectionnez les location",
                                                                                           choices=unique(metals_bees$Location),
                                                                                           selected=unique(metals_bees$Location)
-                                                        )),
+                                                        )))),
                                                         dataTableOutput("table_Metaux"),
-                                                        column(width = 12, downloadButton("downloadData_metal", "Télécharger le tableau")))
+                                                        column(width = 12, downloadButton("downloadData_metal", "Télécharger le tableau"))
                                              ),
                                              tabPanel("Graphiques",
                                                       wellPanel(
