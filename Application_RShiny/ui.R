@@ -126,13 +126,12 @@ shinyUI(
                                                         column(width = 12, checkboxGroupInput(inputId = "varloc1",
                                                                                               label = "Variable : ", 
                                                                                               choices = unique(soil_occup$Location), 
-                                                                                              selected="Urban", inline=TRUE)),
+                                                                                              selected=unique(soil_occup$Location), inline=TRUE)),
                                                         column(width = 12, dataTableOutput("data_table_soil"))),
                                                       column(width = 3, downloadButton("downloadData_soil", "Télécharger le tableau"))
                                              ),
                                              tabPanel("Graphiques",
                                                       fluidRow(
-                                                        div(h3("Visualisation", style = "color : white"), align="center"),
                                                         column(width = 2, checkboxGroupInput(inputId = "varloc2", label = "Variable : ", 
                                                                                              choices = unique(soil_occup$Location), 
                                                                                              selected="Urban")),
@@ -146,39 +145,87 @@ shinyUI(
                                  tabsetPanel(id = "Onglet_PestTrait",
                                              tabPanel("Tableau de données",
                                                       fluidRow(
-                                                        column(width = 9, radioButtons(inputId = "vartreat", label = "Voir par : ", 
+                                                        column(width = 2, radioButtons(inputId = "vartreat", label = "Voir par : ", 
                                                                                        choices = unique(colnames(treat_pest[,1:2])), 
                                                                                        selected="Date", inline=TRUE)),
+                                                        column(width=3, offset=1,
+                                                               dateRangeInput(inputId = "treat_selectDate", label = ("Sélectionnez une période :"),
+                                                                              start = min(treat_pest$Date), end = max(treat_pest$Date), 
+                                                                              min = min(treat_pest$Date), max = max(treat_pest$Date), 
+                                                                              format = "dd-mm-yyyy", language = "fr", separator = " à ")),
+                                                        column(width=3, offset=1,
+                                                               selectInput(inputId="moleculeTrait", label=("Selectionnez une molécule :"),
+                                                                           choices=c(as.character(l_molecules),"Toutes"), selected="Toutes", multiple=T)),
                                                         dataTableOutput("data_table_treat"),
-                                                        column(width = 3, downloadButton("downloadTreat_pest", "Télécharger le tableau"))
-                                                      )
+                                                        column(width = 3, downloadButton("downloadTreat_pest", "Télécharger le tableau")))         
                                              ),
                                              tabPanel("Frise",
-                                                      column(width = 12,div(img(src="Frise_treatment.png", title="Popup", width = "80%")), align="center",
+                                                      column(width = 12,div(img(src="Frise_treatment.png", width = "80%")), align="center",
                                                              style = "margin-bottom: 30px;")
-                                             )
+                                             ),
+                                             tabPanel("Résumé",
+                                                      verbatimTextOutput("SummaryTreat"))
                                  )
                         ),
                         tabPanel("Pesticides détectés",
                                  tabsetPanel(id = "Onglet_pest",
                                              tabPanel("Tableau de données",
-                                                      checkboxInput("filtre_zero_pest",
-                                                                    "Enlever les lignes ne contenant que des 0",
-                                                                    value = FALSE, width='100%'),
-                                                      dataTableOutput("table_Pest"),
-                                                      column(width = 12, downloadButton("downloadData_pest", "Télécharger le tableau"))
-                                             )
+                                                      fluidRow(
+                                                        column(width=4,checkboxInput("filtre_zero_pest",
+                                                                                     "Enlever les lignes ne contenant que des 0",
+                                                                                     value = FALSE, width='100%')),
+                                                        column(width=5, offset=3, radioButtons(inputId="appliedpest", label="",
+                                                                                               choices=c("Tous", "Traitements appliqués dans la parcelle adjacente"), 
+                                                                                               inline=TRUE)),
+                                                        column(width=4,selectInput(inputId="selecthivepest",
+                                                                                   label="Sélectionnez les ruches",
+                                                                                   choices=c("Toutes",as.character(pest_bees$Hive)),
+                                                                                   selected="Toutes",
+                                                                                   multiple=T
+                                                        )),
+                                                        column(width=4,dateRangeInput(inputId = "pest_selectDate", label = ("Sélectionnez une période :"),
+                                                                                      start = min(pest_bees$Date), end = max(pest_bees$Date), 
+                                                                                      min = min(pest_bees$Date), max = max(pest_bees$Date), 
+                                                                                      format = "dd-mm-yyyy", language = "fr", separator = " à ")),
+                                                        column(width=4,checkboxGroupInput(inputId="selectlocationpest",
+                                                                                          label="Sélectionnez les location",
+                                                                                          choices=unique(pest_bees$Location),
+                                                                                          selected=unique(pest_bees$Location)
+                                                        )),
+                                                        dataTableOutput("table_Pest"),
+                                                        column(width = 12, downloadButton("downloadData_pest", "Télécharger le tableau"))
+                                                      )),
+                                             tabPanel("Résumé",
+                                                      verbatimTextOutput("SummaryPest"))
                                  )
                         ),
                         tabPanel("Métaux détectés",
                                  tabsetPanel(id = "Onglet_metaux",
                                              tabPanel("Tableau de données",
-                                                              column(width = 12, selectInput(inputId = "varmet1",
-                                                                                             label = "Métaux : ", 
-                                                                                             choices = c("Tous",colnames(metals_bees)), 
-                                                                                             selected= "Tous", multiple=T)),
-                                                              dataTableOutput("table_Metaux"),
-                                                              column(width = 12, downloadButton("downloadData_metal", "Télécharger le tableau"))
+                                                      fluidRow(
+                                                        column(width = 6, selectInput(inputId = "varmet1",
+                                                                                      label = "Métaux : ", 
+                                                                                      choices = c("Tous",l_metaux), 
+                                                                                      selected= "Tous", multiple=T))
+                                                        ,
+                                                        column(width=6,selectInput(inputId="selecthivemetals",
+                                                                                   label="Sélectionnez les ruches",
+                                                                                   choices=c("Toutes",as.character(metals_bees$Hive)),
+                                                                                   selected="Toutes",
+                                                                                   multiple=T
+                                                        )),
+                                                        column(width=6,dateRangeInput(inputId = "metals_selectDate", label = ("Sélectionnez une période :"),
+                                                                                      start = min(metals_bees$Date), end = max(metals_bees$Date), 
+                                                                                      min = min(metals_bees$Date), max = max(metals_bees$Date), 
+                                                                                      format = "dd-mm-yyyy", language = "fr", separator = " à ")),
+                                                        
+                                                        column(width=6,checkboxGroupInput(inputId="selectlocationmetals",
+                                                                                          label="Sélectionnez les location",
+                                                                                          choices=unique(metals_bees$Location),
+                                                                                          selected=unique(metals_bees$Location)
+                                                        )),
+                                                        dataTableOutput("table_Metaux"),
+                                                        column(width = 12, downloadButton("downloadData_metal", "Télécharger le tableau")))
                                              ),
                                              tabPanel("Graphiques",
                                                       wellPanel(
@@ -232,12 +279,51 @@ shinyUI(
                                                                
                                                         )
                                                       )
-                                             )
+                                             ),
+                                             tabPanel("Résumé",
+                                                      verbatimTextOutput("SummaryMetal"))
                                  )
                                  
-                        ),
+                        )
                       )
              ), 
+             tabPanel("Variabilité et comparaisons",
+                      navlistPanel( widths = c(2, 10),
+                                    tabPanel("Variabilité intra site",
+                                             fluidRow(
+                                               column(width=12, div(plotlyOutput("tTestIntraSite"
+                                               ),style = "margin-bottom: 275px;")),
+                                               column(width=12, card(
+                                                 style = "background-color: black; color: white;",
+                                                 card_header("Tests T intra sites"),
+                                                 card_body(
+                                                   p("Différence en log entre les deux ruches d'un même site, avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05, non corrigée pour les tests multiples).")
+                                                 )))
+                                             )),
+                                    tabPanel("Variabilité inter site",
+                                             fluidRow(
+                                               column(width=12, 
+                                                      div(plotlyOutput("TestInterSite"),
+                                                          style = "margin-bottom: 350px;")),
+                                               column(width=12, card(
+                                                 style = "background-color: black; color: white;",
+                                                 card_header("Tests de comparaison inter sites"),
+                                                 card_body(
+                                                   p("Différence en log entre les deux sites différents (1er site - 2e site), avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05).")
+                                                 ))
+                                               ),
+                                               column(width=12, card(
+                                                 style = "background-color: black; color: white;",
+                                                 card_header("Modèle utilisé avec lmer : "),
+                                                 card_body(withMathJax(
+                                                   helpText("$$\\log(\\text{Concentration}) \\sim \\text{Metal} \\times \\text{Location} + (1 \\mid \\text{Hive})$$")
+                                                 )))
+                                                 
+                                               )
+                                             )
+                                    )      
+                      )
+             ),
              tabPanel("Effet des traitements phytosanitaires",
                                tabsetPanel(
                                  tabPanel("Sur les teneurs en métaux",
@@ -372,37 +458,6 @@ shinyUI(
                         )
                       )
                       
-             ),
-             tabPanel("Variabilité et comparaisons",
-                      navlistPanel( widths = c(2, 10),
-                                    tabPanel("Variabilité intra site",
-                                             fluidRow(
-                                               column(width=12, div(plotlyOutput("tTestIntraSite"
-                                               ),style = "margin-bottom: 275px;")),
-                                               column(width=12, card(
-                                                 style = "background-color: black; color: white;",
-                                                 card_header("Tests T intra sites"),
-                                                 card_body(
-                                                   p("Différence en log entre les deux ruches d'un même site (2e − 1re ruche), avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05, non corrigée pour les tests multiples).")
-                                                 )))
-                                             )),
-                                    tabPanel("Variabilité inter site",
-                                             fluidRow(
-                                               column(width=12, 
-                                                      div(plotlyOutput("TestInterSite"),
-                                                          style = "margin-bottom: 350px;")),
-                                               column(width=12, card(
-                                                 style = "background-color: black; color: white;",
-                                                 card_header("Tests de comparaison inter sites"),
-                                                 card_body(
-                                                   p("Différence en log entre les deux sites différents (2e − 1re ruche), avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05).")
-                                                 ))
-                                                 
-                                                 
-                                               )
-                                             )
-                                    )      
-                      )
              )
   )
 )

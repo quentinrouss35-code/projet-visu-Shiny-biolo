@@ -174,6 +174,9 @@ l_metaux <- metals_bees |>
   select(!Date:Location) |>
   colnames()
 
+#Récupération des noms de molécules
+l_molecules <- treat_pest$Molecule
+
 #Préparation pour graphes effet du traitement sur les métaux 
 to_date <- function(x) if (inherits(x, "Date")) x else as.Date(x, format = "%d/%m/%Y")
 
