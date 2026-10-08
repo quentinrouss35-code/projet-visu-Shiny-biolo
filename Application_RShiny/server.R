@@ -181,11 +181,30 @@ shinyServer(function(input, output, session) {
     
     if('Tous' %in% input$varmet1){
       validate(need(length(input$varmet1) < 2, "Décocher 'Tous' pour sélectionner des métaux."))
-      metals_bees
+      metals_output <- metals_bees
     }
     else{
       metals_output <- metals_bees |> 
-        select(all_of(input$varmet1))}
+        select(1:3,all_of(input$varmet1))}
+    
+    metals_output <- metals_output |> 
+      filter(Date >= input$metals_selectDate[1], Date <= input$metals_selectDate[2])
+    
+    metals_output <- metals_output |>
+      filter(Location %in% input$selectlocationmetals)
+    
+    if ('Toutes' %in% input$selecthivemetals){
+      validate(need(length(input$selecthivemetals) < 2, "Décocher 'Toutes' pour sélectionner des ruches."))
+      metals_output
+    }else{
+      metals_output <- metals_output |>
+        filter(Hive %in% input$selecthivemetals)
+    }
+    
+    
+    
+    
+    metals_output
     
   })
   
@@ -203,8 +222,33 @@ shinyServer(function(input, output, session) {
     })
   
   ##Partie des résidus de pesticides
-  # Affichage seulement des lignes ne contenant pas que des 0 dans jeu de données pesticides
   data_mod_pest <- reactive({
+    
+    pest_bees <- pest_bees |> 
+      rename_with(~ str_remove(.x, "^Pest_"))
+    
+    if ('Toutes' %in% input$selecthivepest){
+      validate(need(length(input$selecthivepest) < 2, "Décocher 'Toutes' pour sélectionner des ruches."))
+      pest_bees
+    }else{
+      pest_bees <- pest_bees |>
+        filter(Hive %in% input$selecthivepest)
+    }
+    
+    pest_bees <- pest_bees |> 
+      filter(Date >= input$pest_selectDate[1], Date <= input$pest_selectDate[2])
+    
+    pest_bees <- pest_bees |>
+      filter(Location %in% input$selectlocationpest)
+    
+    if('Tous' %in% input$appliedpest){
+      pest_bees 
+    }
+    else if ("Traitements appliqués dans la parcelle adjacente" %in% input$appliedpest){
+      pest_bees <- pest_bees |> 
+        select(1:3, all_of(treat_pest$Molecule))
+    }
+    
     if (input$filtre_zero_pest){
       cols_num <- sapply(pest_bees, is.numeric)
       lignes_a_garder <- rowSums(pest_bees[,cols_num], na.rm = TRUE)>0
@@ -212,6 +256,8 @@ shinyServer(function(input, output, session) {
     }else{
       pest_bees
     }
+    
+    pest_bees
   })
   
   #Affichage du tableau de données résidus de pesticide
@@ -278,9 +324,13 @@ shinyServer(function(input, output, session) {
       theme(
         plot.title = element_text(face = "bold",
                                   size=18,
-                                  hjust=0.5)
+                                  hjust=0.5),
+        strip.text = element_text(size = 24, face = "bold"),
+        legend.title = element_text(size = 16, face = "bold"),
+        legend.text = element_text(size = 14),
+        legend.key.size = unit(1, "cm")
       ) +
-      labs(title = "Poucentages d'occupation des sols pour")+
+      labs(title = "Pourcentages d'occupation des sols pour")+
       facet_wrap(~ Location) 
     
   })
@@ -288,15 +338,23 @@ shinyServer(function(input, output, session) {
   ##Partie traitmement pesticide 
   #Modif utilisateur du tableau de données des traitements
   data_mod_treat <- reactive({
-    validate(need(length(input$vartreat) > 0, "Sélectionner au moins une variable."))
+    validate(need(length(input$moleculeTrait) > 0, "Sélectionner au moins une variable."))
+    out <- treat_pest |> 
+      filter(Date >= input$treat_selectDate[1], Date <= input$treat_selectDate[2])
+    
+    if ("Toutes" %in% input$moleculeTrait){
+      validate(need(length(input$moleculeTrait) < 2, "Décocher 'Toutes'."))
+    }else{
+      out <- out |> 
+        filter( Molecule %in% input$moleculeTrait)}
     
     if (input$vartreat=="Date"){
-      treat_pest_output <-  treat_pest |> 
+      out <-  out |> 
         arrange(Date)
     }else{
-      treat_pest_output <-  treat_pest |> 
-        arrange(Molecule)
-    }     
+      out <-  out |> 
+        arrange(Molecule)}
+    out
   })
   
   #Affichage du jeu de données traitement
@@ -529,4 +587,15 @@ shinyServer(function(input, output, session) {
             panel.grid.minor   = element_blank(),
             legend.position    = "top")
   })
+  
+  #Résumés 
+  output$SummaryTreat <- renderPrint(
+    print(summary(treat_pest)), width = 100
+  )
+  output$SummaryMetal <- renderPrint(
+    print(summary(metals_bees)), width = 100
+  )
+  output$SummaryPest <- renderPrint(
+    print(summary(pest_bees)), width = 100
+  )
 })
