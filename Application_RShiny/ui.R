@@ -364,11 +364,19 @@ shinyUI(
                           conditionalPanel(
                             condition = "input.ACP_PersoData == true",
                             wellPanel(
-                              p("Sélectionnez les métaux lourds que vous voulez analyser :"),
+                              p("Sélectionnez les variables que vous voulez analyser :"),
+                              p("- Métaux lourds :", style = "text-indent: 10px;"),
                               div(class="multicol", 
-                                  checkboxGroupInput(inputId = "ACP_selectVar", label=NULL, selected = colnames(metals_bees[, -c(1:3)]), inline=T,
+                                  checkboxGroupInput(inputId = "ACP_selectMetal", label=NULL, selected = colnames(metals_bees[, -c(1:3)]), inline=T,
                                                      choices = colnames(metals_bees[, -c(1:3)]))
                               ),
+                              tags$br(),
+                              p("- Occupation du sol du foncier :", style = "text-indent: 10px;"),
+                              div(
+                                  checkboxGroupInput(inputId = "ACP_selectSolOccup", label=NULL, selected = colnames(soil_occup[, -c(1)]), inline=T,
+                                                     choices = colnames(soil_occup[, -c(1)]))
+                              ),
+                              
                               tags$hr(),
                               p("Sélectionnez les ruches que vous voulez analyser :"),
                               div(class="multicol", 
@@ -382,17 +390,30 @@ shinyUI(
                                              min = min(metals_bees$Date), max = max(metals_bees$Date), 
                                              format = "dd-mm-yyyy", language = "fr", separator = " à "),
                               tags$hr(),
+                              
                               p("Sélectionnez les variables quantitatives supplémentaires :"),
+                              p("- Métaux lourds :", style = "text-indent: 10px;"),
                               div(class="multicol",
-                                  checkboxGroupInput(inputId = "ACP_selectQuantiSup", label=NULL, inline=T,
+                                  checkboxGroupInput(inputId = "ACP_selectMetal_Sup", label=NULL, inline=T,
+                                                     choices = NULL)
+                              ),
+                              p("- Occupation du sol du foncier :", style = "text-indent: 10px;"),
+                              div(class="multicol",
+                                  checkboxGroupInput(inputId = "ACP_selectSolOccup_Sup", label=NULL, inline=T,
                                                      choices = NULL)
                               ),
                               tags$hr(),
-                              p("Sélectionnez les variables qualitatives supplémentaires :"),
+                              p("Sélectionnez les groupes d'individus supplémentaires :"),
                               div(class="multicol",
-                                  checkboxGroupInput(inputId = "ACP_selectQualiSup", label=NULL, inline=T,
-                                                     choices = colnames(metals_bees[, 1:3]))
+                                  checkboxGroupInput(inputId = "ACP_selectIndiv_Sup", label=NULL, inline=T,
+                                                     choices = NULL)
                               ),
+                              #tags$hr(),
+                              #p("Sélectionnez les variables qualitatives supplémentaires :"),
+                              #div(class="multicol",
+                                  #checkboxGroupInput(inputId = "ACP_selectQuali_Sup", label=NULL, inline=T,
+                                                     #choices = colnames(metals_bees[, 1:3]))
+                              #),
                               tags$hr(),
                               fluidRow(
                                 column(width=12, align="center",
@@ -403,24 +424,57 @@ shinyUI(
                             )
                             
                           ),
-                          br(),
+                          tags$br(),
                           checkboxInput(inputId = "ACP_PersoGraph", label = "Personnalisation graphique de l'ACP", value=F),
                           
                           conditionalPanel(
                             condition = "input.ACP_PersoGraph == true",
                             wellPanel(
+                              numericInput(inputId = "ACP_Axe1", label = "Sélectionnez les deux axes à représenter :", value = 1, min=1, max=5),
+                              numericInput(inputId = "ACP_Axe2", label = NULL, value = 2, min=1, max=5),
+                              tags$hr(),
+                              
                               p("Sélectionnez le graphique à personnaliser : "),
                               radioButtons("ACP_selectGraphPerso", label=NULL, choices=c("individus", "variables"), selected="individus", inline=T),
                               conditionalPanel(
                                 condition = "input.ACP_selectGraphPerso == 'individus'",
                                 wellPanel(
+                                  p("Représenter l'habillage :"),
+                                  radioButtons(inputId="ACP_selectHabillage", label=NULL, inline=T, choices=c("Hive", "Location", "Pas d'habillage"), selected="Pas d'habillage"),
+                                  
                                   p("Représenter les ellipses :"),
                                   checkboxInput(inputId="ACP_ellispe", label="Ellipse ?"),
-                                  tags$br(),
-                                  p("Représenter l'habillage :"),
-                                  radioButtons(inputId="ACP_selectHabillage", label=NULL, inline=T, choices=c("Habillage", "Pas d'habillage"), selected="Pas d'habillage")
-                                  #checkboxInput(inputId="ACP_Habillage", label="Habillage ?")
                                   
+                                  p("Libellés des points :"),
+                                  selectInput(
+                                    inputId = "ACP_selectInd",
+                                    label = "Sélectionner les individus selon :",
+                                    choices = c(
+                                      "Aucun filtre" = "none",
+                                      "Cos²" = "cos2",
+                                      "Contribution" = "contrib"
+                                    ),
+                                    selected = "none"
+                                  ),
+                                  conditionalPanel(
+                                    condition = "input.ACP_selectInd == 'cos2'",
+                                    sliderInput(
+                                      inputId = "ACP_selectIndValue",
+                                      label = "Seuil de sélection (%) :",
+                                      min=0,
+                                      max=1,
+                                      value=0
+                                    )),
+                                  conditionalPanel(
+                                    condition = "input.ACP_selectInd == 'contrib'",
+                                    sliderInput(
+                                      inputId = "ACP_selectIndValue",
+                                      label = "Seuil de sélection (%) :",
+                                      min=1,
+                                      max=nrow(metals_bees),
+                                      value=0
+                                    )
+                                  )
                                 )
                               )
                             )
@@ -429,37 +483,47 @@ shinyUI(
                         
                         # Graphiques de l'ACP
                         mainPanel(
-                          fluidRow(
-                            column(width=6,
-                                   plotOutput("ACP_graphDecompo")
-                            ),
-                            
-                            column(width=6,
-                                   conditionalPanel(
-                                     condition = "input.maj_ACP > 0",
-                                     wellPanel(
-                                       h4("Sélectionnez les deux axes à représenter"),
-                                       numericInput(inputId = "ACP_Axe1", label = NULL, value = 1, min=1, max=5),
-                                       numericInput(inputId = "ACP_Axe2", label = NULL, value = 2, min=1, max=5)
-                                     )
-                                   )
+                          wellPanel(
+                            fluidRow(
+                              column(width=6,
+                                     #conditionalPanel(
+                                     #condition = "input.maj_ACP == true",
+                                     #tabsetPanel(
+                                     #tabPanel(h4("Décomposition de l'inertie", style = "color: yellow; text-align: center;"),
+                                     plotOutput("ACP_graphDecompo") 
+                                     #)
+                                     #)
+                                     #)
+                                     
+                              ),
+                              column(width=6,
+                                     tags$br(),
+                                     tags$br(),
+                                     tags$br(),
+                                     tags$br(),
+                                     tableOutput("ACP_tabEigen")
+                              )
                             )
-                            
                           ),
                           tags$hr(),
-                          fluidRow(
-                            column(width=6,
-                                   plotOutput("ACP_graphInd")
-                            ),
-                            column(width=6,
-                                   plotOutput("ACP_graphVar")
-                            ),
-                            #######tableOutput("Test")
-                          )
+                          wellPanel(
+                            fluidRow(
+                              column(width=6,
+                                     plotOutput("ACP_graphInd"),
+                                     p("Les individus supplémentaires sont colorisés en rouge")
+                              ),
+                              column(width=6,
+                                     plotOutput("ACP_graphVar")
+                              )
+                            )
+                          ),
+                          #tableOutput("Test")
+                          #textOutput("ACP_totalIndiv")
                           
                         )
                       )
                       
              )
+             
   )
 )
