@@ -375,69 +375,105 @@ shinyServer(function(input, output, session) {
   
   
   ## ACP sur les concentrations de métaux lourds
-  observeEvent(input$ACP_selectVar, {
+  observeEvent(input$ACP_selectMetal, {
     updateCheckboxGroupInput(
       session,
-      inputId = "ACP_selectQuantiSup",
-      choices = setdiff(colnames(metals_bees[, 4:20]), input$ACP_selectVar)  # Les choix sont ceux sélectionnés dans le premier
+      inputId = "ACP_selectMetal_Sup",
+      choices = setdiff(colnames(metals_bees[, 4:20]), input$ACP_selectMetal)
     )
   })
   
-  df_ACP <- eventReactive(input$maj_ACP, {
-    df <- metals_bees |> 
-      filter(Hive %in% input$ACP_selectRuche,
-             Date >= input$ACP_selectDate[1], Date <= input$ACP_selectDate[2]) |> 
-      select(input$ACP_selectQualiSup, 4:20)
-    #rename(Al = `Aluminium mg/kg`, As = `Arsenic mg/kg`, Cd = `Cadmium mg/kg`, Ca = `Calcium g/kg`, Cr = `Chromium mg/kg`, Co = `Cobalt mg/kg`, Cu = `Copper mg/kg`, Fe = `Iron mg/kg`, Mg = `Magnesium g/kg`, Mn = `Manganese mg/kg`, Mo = `Molybdenum mg/kg`, P = `Phosphorous g/kg`, Pb = `Lead mg/kg`, K = `Potassium g/kg`, Na = `Sodium g/kg`, S = `Sulfur g/kg`, Zn = `Zinc mg/kg`) |>
-    df
+  observeEvent(input$ACP_selectSolOccup, {
+    updateCheckboxGroupInput(
+      session,
+      inputId = "ACP_selectSolOccup_Sup",
+      choices = setdiff(colnames(soil_occup[, 2:7]), input$ACP_selectSolOccup)
+    )
   })
   
-  #######output$Test <- renderTable({df_ACP()})
+  observeEvent(input$ACP_selectRuche, {
+    updateCheckboxGroupInput(
+      session,
+      inputId = "ACP_selectIndiv_Sup",
+      choices = setdiff(unique(metals_bees$Hive), input$ACP_selectRuche)
+    )
+  })
   
+  
+  res_acp <- eventReactive(input$maj_ACP, {
+    donnees <- isolate(
+      res_ACP <- metals_bees |> 
+        inner_join(soil_occup, by='Location') |> 
+        filter(Hive %in% c(input$ACP_selectRuche, input$ACP_selectIndiv_Sup),
+               Date >= input$ACP_selectDate[1], Date <= input$ACP_selectDate[2]) |> 
+        select(1:3, input$ACP_selectMetal, input$ACP_selectSolOccup, input$ACP_selectMetal_Sup, input$ACP_selectSolOccup_Sup)
+    )
+    PCA(donnees, scale.unit=T, 
+        quanti.sup=c(input$ACP_selectMetal_Sup, input$ACP_selectSolOccup_Sup), 
+        quali.sup=1:3, 
+        ind.sup=donnees$Hive%in%input$ACP_selectIndiv_Sup
+        )
+  })
+  
+  output$ACP_totalIndiv <- renderText({
+    input$ACP_selectIndiv_Sup
+    #which(metals_bees$Hive%in%input$ACP_selectIndiv_Sup)
+  })
+  output$Test <- renderTable({input$ACP_selectIndiv_Sup})
+  
+  ### Identification et sélection des axes
   output$ACP_graphDecompo <-renderPlot({
-    input$maj_ACP
-    isolate({
-      res_ACP <- PCA(df_ACP(), scale.unit=T, quanti.sup=input$ACP_selectQuantiSup, quali.sup=input$ACP_selectQualiSup)
-    })
-    barplot(res_ACP$eig[, 2])
-    
+    res <- res_acp()
+    barplot(res$eig[, 2], main="Décomposition de l'inertie")
+  })
+  output$ACP_tabEigen <- renderTable({
+    res <- res_acp()
+    res$eig
   })
   
+  
+  palette_quali <- eventReactive(input$ACP_selectHabillage,{
+    if (input$ACP_selectHabillage=="Location"){
+      palette_foncier
+    } else {
+      palette_ruche
+    }
+  })
   
   output$ACP_graphInd <- renderPlot({
-    input$maj_ACP
-    isolate({
-      res_ACP <- PCA(df_ACP(), scale.unit=T, quanti.sup=input$ACP_selectQuantiSup, quali.sup=input$ACP_selectQualiSup)
-      
-      palette_quali <-
-        if (length(input$ACP_selectQualiSup)!=0){
-          if (input$ACP_selectQualiSup[1]=="Location"){
-            palette_foncier
-          } else {
-            palette_ruche
-          }
-        }
-      
-    })
+    res <- res_acp()
+    
+    select_ind <- switch(
+      input$ACP_selectInd,
+      # Aucun filtre
+      "none" = NULL,
+      # Cos²
+      "cos2" = list(
+        cos2 = input$ACP_selectIndValue
+      ),
+      # Contribution
+      "contrib" = list(
+        contrib = input$ACP_selectIndValue
+      )
+    )
+    
     fviz_pca_ind(
-      res_ACP,
+      res,
       axes=c(input$ACP_Axe1, input$ACP_Axe2),
-      geom = "point",
-      habillage = ifelse(input$ACP_selectHabillage=="Habillage", 1, "none"),
-      palette = palette_quali,
+      habillage = ifelse(input$ACP_selectHabillage=="Pas d'habillage", "none", ifelse(input$ACP_selectHabillage=="Hive", 2, 3)),
+      palette = palette_quali(),
       addEllipses = input$ACP_ellispe,
-      #select.ind=list(cos2 =0.5),
+      #select.ind = select_ind,
+      add.ind.sup=T,
+      col.ind.sup = "red",
       title = "ACP - individus"
     )
   })
   
   output$ACP_graphVar <- renderPlot({
-    input$maj_ACP
-    isolate({
-      res_ACP <- PCA(df_ACP(), scale.unit=T, quanti.sup=input$ACP_selectQuantiSup, quali.sup=input$ACP_selectQualiSup)
-    })
+    res <- res_acp()
     fviz_pca_var(
-      res_ACP,
+      res,
       axes=c(input$ACP_Axe1, input$ACP_Axe2),
       title = "ACP - variables"
     )
@@ -445,7 +481,6 @@ shinyServer(function(input, output, session) {
   
   
   #Tests de student intra site 
-  
   output$tTestIntraSite <- renderPlotly({
     
     df_plot <- res_t_test_intra_loc
