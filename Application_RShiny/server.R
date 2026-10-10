@@ -431,7 +431,16 @@ shinyServer(function(input, output, session) {
     })
   })
   
+  
+  #### Récupération du nombre de ruche pour le conditionalPanel qui affiche ou non les cases à cocher sur les groupes d'individus supplémentaires
+  output$nb_hives <- reactive({
+    length(input$ACP_selectRuche)
+  })
+  outputOptions(output, "nb_hives", suspendWhenHidden = FALSE)
+  
   output$Test <- renderTable({input$ACP_selectIndiv_Sup})
+  
+  
   
   ### Identification et sélection des axes
   output$ACP_graphDecompo <-renderPlot({
@@ -452,6 +461,21 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  #### Mise à jour de l'argument max du sliderInput de sélection de la contribution des individus
+  observeEvent(input$ACP_maj, {
+    res <- res_acp()
+    nb_indiv <- nrow(res$ind$coord)
+    
+    updateSliderInput(
+      session,
+      inputId = "ACP_selectIndValue_Contrib",
+      min = 1,
+      max = nb_indiv,
+      value = nb_indiv
+    )
+    
+  })
+  
   output$ACP_graphInd <- renderPlot({
     res <- res_acp()
     
@@ -461,11 +485,11 @@ shinyServer(function(input, output, session) {
       "none" = NULL,
       # Cos²
       "cos2" = list(
-        cos2 = input$ACP_selectIndValue
+        cos2 = input$ACP_selectIndValue_Cos2
       ),
       # Contribution
       "contrib" = list(
-        contrib = input$ACP_selectIndValue
+        contrib = input$ACP_selectIndValue_Contrib
       )
     )
     
@@ -475,21 +499,214 @@ shinyServer(function(input, output, session) {
       habillage = ifelse(input$ACP_selectHabillage=="Pas d'habillage", "none", ifelse(input$ACP_selectHabillage=="Hive", 2, 3)),
       palette = palette_quali(),
       addEllipses = input$ACP_ellispe,
-      #select.ind = select_ind,
+      select.ind = select_ind,
       add.ind.sup=T,
       col.ind.sup = "red",
-      title = "ACP - individus"
+      title = "Graphique des individus"
     )
   })
   
+  #### Mise à jour de l'argument max du sliderInput de sélection de la contribution des variables
+  observeEvent(input$ACP_maj, {
+    res <- res_acp()
+    nb_vars <- nrow(res$var$coord)
+    
+    updateSliderInput(
+      session,
+      inputId = "ACP_selectVarValue_Contrib",
+      min = 1,
+      max = nb_vars,
+      value = nb_vars
+    )
+    
+  })
+  #### Construction du graphique des corrélations
   output$ACP_graphVar <- renderPlot({
     res <- res_acp()
+    
+    select_var <- switch(
+      input$ACP_selectVar,
+      # Aucun filtre
+      "none" = NULL,
+      # Cos²
+      "cos2" = list(
+        cos2 = input$ACP_selectVarValue_Cos2
+      ),
+      # Contribution
+      "contrib" = list(
+        contrib = input$ACP_selectVarValue_Contrib
+      )
+    )
+
     fviz_pca_var(
       res,
       axes=c(input$ACP_Axe1, input$ACP_Axe2),
-      title = "ACP - variables"
+      select.var = select_var,
+      title = "Graphique des corrélations"
     )
   })
+  
+  
+  #### Affichage des lignes de code
+  ##### Formulation de l'ACP
+  output$ACP_codePCA <- renderText({
+    
+    # Utiliser les valeurs validées lors du dernier clic
+    req(res_acp())
+    
+    # Indices des variables supplémentaires quantitatives
+    donnees <- metals_bees |>
+      inner_join(soil_occup, by = "Location") |>
+      filter(
+        Hive %in% c(
+          input$ACP_selectRuche,
+          input$ACP_selectIndiv_Sup
+        ),
+        Date >= input$ACP_selectDate[1],
+        Date <= input$ACP_selectDate[2]
+      ) |>
+      select(
+        1:3,
+        input$ACP_selectMetal,
+        input$ACP_selectSolOccup,
+        input$ACP_selectMetal_Sup,
+        input$ACP_selectSolOccup_Sup
+      )
+    
+    ind_sup <- which(donnees$Hive %in% input$ACP_selectIndiv_Sup)
+    
+    # Formule PCA
+    code <- paste0(
+      "PCA(\n",
+      "  X = donnees,\n",
+      "  scale.unit = TRUE,\n",
+      "  quanti.sup = c(",
+      paste(
+        deparse(input$ACP_selectMetal_Sup),
+        deparse(input$ACP_selectSolOccup_Sup),
+        sep = ", "
+      ),
+      "),\n",
+      "  quali.sup = 1:3,\n"
+    )
+    
+    if (length(ind_sup) > 0) {
+      code <- paste0(
+        code,
+        "  ind.sup = c(",
+        paste(ind_sup, collapse = ", "),
+        "),\n"
+      )
+    }
+    
+    code <- paste0(
+      code,
+      "  graph = FALSE\n",
+      ")"
+    )
+    
+    code
+  })
+  
+  ##### Graphique des individus
+  output$ACP_codeGraphInd <- renderText({
+    
+    # Axes
+    axe1 <- input$ACP_Axe1
+    axe2 <- input$ACP_Axe2
+    
+    # Sélection des individus
+    code_select_ind <- switch(
+      input$ACP_selectInd,
+      
+      "none" = "select.ind = NULL",
+      
+      "cos2" = paste0(
+        "select.ind = list(cos2 = ",
+        deparse(input$ACP_selectIndValue_Cos2),
+        ")"
+      ),
+      
+      "contrib" = paste0(
+        "select.ind = list(contrib = ",
+        deparse(input$ACP_selectIndValue_Contrib),
+        ")"
+      )
+    )
+    
+    # Habillage
+    habillage <- switch(
+      input$ACP_selectHabillage,
+      "Pas d'habillage" = "\"none\"",
+      "Hive" = "2",
+      "Sexe" = "3"
+    )
+    
+    # Ellipses
+    ellipses <- if (isTRUE(input$ACP_ellispe)) "TRUE" else "FALSE"
+    
+    # Palette
+    palette_code <- paste(
+      deparse(palette_quali()),
+      collapse = "\n"
+    )
+    
+    # Code final
+    paste0(
+      "fviz_pca_ind(\n",
+      "  res,\n",
+      "  axes = c(", axe1, ", ", axe2, "),\n",
+      "  habillage = ", habillage, ",\n",
+      "  palette = ", palette_code, ",\n",
+      "  addEllipses = ", ellipses, ",\n",
+      "  ", code_select_ind, ",\n",
+      "  add.ind.sup = TRUE,\n",
+      "  col.ind.sup = \"red\",\n",
+      "  title = \"Graphique des individus\"\n",
+      ")"
+    )
+  })
+  
+  ##### Graphique des corrélations
+  output$ACP_codeGraphCorr <- renderText({
+    
+    # Récupération des valeurs actuelles
+    axe1 <- input$ACP_Axe1
+    axe2 <- input$ACP_Axe2
+    type_selection <- input$ACP_selectVar
+    
+    # Construction de l'argument select.var
+    code_select_var <- switch(
+      type_selection,
+      
+      "none" = "select.var = NULL",
+      
+      "cos2" = paste0(
+        "select.var = list(cos2 = ",
+        deparse(input$ACP_selectVarValue_Cos2),
+        ")"
+      ),
+      
+      "contrib" = paste0(
+        "select.var = list(contrib = ",
+        deparse(input$ACP_selectVarValue_Contrib),
+        ")"
+      )
+    )
+    
+    # Code final
+    paste0(
+      "fviz_pca_var(\n",
+      "  res,\n",
+      "  axes = c(", axe1, ", ", axe2, "),\n",
+      "  ", code_select_var, ",\n",
+      "  title = \"Graphique des corrélations\"\n",
+      ")"
+    )
+  })
+  
+  
+  
   
   ### Sous-onglet Tableaux de résultats
   observeEvent(

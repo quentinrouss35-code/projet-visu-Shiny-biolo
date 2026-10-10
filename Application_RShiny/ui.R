@@ -360,7 +360,7 @@ shinyUI(
                                  # Sidebar with a slider input for number of bins
                                  sidebarLayout(
                                    sidebarPanel(
-                                     radioButtons(inputId = "ACP_Perso", label = NULL, choices=c("Personnalisation de l'ACP"=1, "Personnalisation des graphiques"=2), selected=1),
+                                     radioButtons(inputId = "ACP_Perso", label = NULL, choices=c("Personnalisation de l'ACP"=1, "Personnalisation des graphiques"=2, "Afficher le code"=3), selected=1),
                                      conditionalPanel(
                                        condition = "input.ACP_Perso == 1",
                                        wellPanel(
@@ -390,7 +390,6 @@ shinyUI(
                                                         min = min(metals_bees$Date), max = max(metals_bees$Date), 
                                                         format = "dd-mm-yyyy", language = "fr", separator = " à "),
                                          tags$hr(),
-                                         
                                          p("Sélectionnez les variables quantitatives supplémentaires :"),
                                          p("- Métaux lourds :", style = "text-indent: 10px;"),
                                          div(class="multicol",
@@ -408,12 +407,6 @@ shinyUI(
                                              checkboxGroupInput(inputId = "ACP_selectIndiv_Sup", label=NULL, inline=T,
                                                                 choices = NULL)
                                          ),
-                                         #tags$hr(),
-                                         #p("Sélectionnez les variables qualitatives supplémentaires :"),
-                                         #div(class="multicol",
-                                         #checkboxGroupInput(inputId = "ACP_selectQuali_Sup", label=NULL, inline=T,
-                                         #choices = colnames(metals_bees[, 1:3]))
-                                         #),
                                          tags$hr(),
                                          fluidRow(
                                            column(width=12, align="center",
@@ -442,12 +435,12 @@ shinyUI(
                                              p("Représenter les ellipses :"),
                                              checkboxInput(inputId="ACP_ellispe", label="Ellipse ?"),
                                              
-                                             p("Libellés des points :"),
+                                             p("Sélection des individus :"),
                                              selectInput(
                                                inputId = "ACP_selectInd",
-                                               label = "Sélectionner les individus selon :",
+                                               label = "Selon :",
                                                choices = c(
-                                                 "Aucun filtre" = "none",
+                                                 "Coordonnées" = "none",
                                                  "Cos²" = "cos2",
                                                  "Contribution" = "contrib"
                                                ),
@@ -456,7 +449,7 @@ shinyUI(
                                              conditionalPanel(
                                                condition = "input.ACP_selectInd == 'cos2'",
                                                sliderInput(
-                                                 inputId = "ACP_selectIndValue",
+                                                 inputId = "ACP_selectIndValue_Cos2",
                                                  label = "Seuil de sélection (%) :",
                                                  min=0,
                                                  max=1,
@@ -465,17 +458,52 @@ shinyUI(
                                              conditionalPanel(
                                                condition = "input.ACP_selectInd == 'contrib'",
                                                sliderInput(
-                                                 inputId = "ACP_selectIndValue",
+                                                 inputId = "ACP_selectIndValue_Contrib",
                                                  label = "Seuil de sélection (%) :",
                                                  min=1,
                                                  max=nrow(metals_bees),
-                                                 value=0
+                                                 value=2
                                                )
                                              )
                                            )
-                                         )
+                                         ),
+                                         conditionalPanel(
+                                           condition = "input.ACP_selectGraphPerso == 'variables'",
+                                           wellPanel(
+                                             p("Sélection des variables :", style="font-weight:bold"),
+                                             selectInput(
+                                               inputId = "ACP_selectVar",
+                                               label = "Selon :",
+                                               choices = c(
+                                                 "Coordonnées" = "none",
+                                                 "Cos²" = "cos2",
+                                                 "Contribution" = "contrib"
+                                               ),
+                                               selected = "none"
+                                             ),
+                                             conditionalPanel(
+                                               condition = "input.ACP_selectVar == 'cos2'",
+                                               sliderInput(
+                                                 inputId = "ACP_selectVarValue_Cos2",
+                                                 label = "Seuil de sélection (%) :",
+                                                 min=0,
+                                                 max=1,
+                                                 value=0
+                                               )),
+                                             conditionalPanel(
+                                               condition = "input.ACP_selectVar == 'contrib'",
+                                               sliderInput(
+                                                 inputId = "ACP_selectVarValue_Contrib",
+                                                 label = "Seuil de sélection (%) :",
+                                                 min=1,
+                                                 max=(ncol(metals_bees)-3),
+                                                 value=2
+                                               )
+                                             )
+                                           )
+                                         )                                         
                                        )
-                                     ),
+                                     )
                                    ),
                                    
                                    # Graphiques de l'ACP
@@ -512,20 +540,34 @@ shinyUI(
                                                            conditionalPanel(
                                                              condition = "input.ACP_selectIndiv_Sup.length > 0",
                                                              textOutput("ACP_Indic_IndivSup")
+                                                             
+                                                           ),
+                                                           conditionalPanel(
+                                                             condition = "input.ACP_Perso == 3",
+                                                             verbatimTextOutput("ACP_codeGraphInd")
                                                            )
+                                                           
                                                     ),
                                                     column(width=6,
-                                                           plotOutput("ACP_graphVar")
+                                                           plotOutput("ACP_graphVar"),
+                                                           conditionalPanel(
+                                                             condition = "input.ACP_Perso == 3",
+                                                             verbatimTextOutput("ACP_codeGraphCorr")
+                                                           )
+                                                           
                                                     )
                                                   )
                                                 ),
-                                                #tableOutput("Test")
-                                                #textOutput("ACP_totalIndiv")
+                                                conditionalPanel(
+                                                  condition = "input.ACP_Perso == 3",
+                                                  verbatimTextOutput("ACP_codePCA")
+                                                )
+                                                
                                                 
                                        ),
                                        
-                                       
                                        tabPanel("Tableaux de résultats",
+                                                tags$br(),
                                                 radioButtons(inputId = "ACP_Tab_Select", label = NULL, choices=c("Tableau des individus"=1, "Tableau des variables"=3, "Tableau des variables qualitatives supplémentaires"=5), selected=1, inline=T),
                                                 conditionalPanel(
                                                   condition = "input.ACP_Tab_Select == 1",
