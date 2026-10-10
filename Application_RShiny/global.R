@@ -30,17 +30,17 @@ metals_bees <- metals_bees |>
   mutate(Date = as.Date(Date, format="%d/%m/%Y"),
          Location = as.factor(Location), 
          Hive = factor(Hive, levels=c("B1", "N1", "B20", "C17", "C2", "C21", "B3", "N10"))) |> 
-  mutate(`Aluminium mg/kg` = as.numeric(ifelse(grepl(c("^<"), `Aluminium mg/kg`), round(as.numeric(gsub(",", ".", substring(`Aluminium mg/kg`, 3)))/3,2), gsub(",", ".", `Aluminium mg/kg`)))) |>
+  mutate(`Aluminium mg/kg` = as.numeric(ifelse(grepl(c("^<"), `Aluminium mg/kg`), as.numeric(gsub(",", ".", substring(`Aluminium mg/kg`, 3)))/3, gsub(",", ".", `Aluminium mg/kg`)))) |>
   
-  mutate(`Arsenic mg/kg` = as.numeric(ifelse(grepl(c("^<"), `Arsenic mg/kg`), round(as.numeric(gsub(",", ".", substring(`Arsenic mg/kg`, 3)))/3,2), gsub(",", ".", `Arsenic mg/kg`)))) |> 
+  mutate(`Arsenic mg/kg` = as.numeric(ifelse(grepl(c("^<"), `Arsenic mg/kg`), as.numeric(gsub(",", ".", substring(`Arsenic mg/kg`, 3)))/3, gsub(",", ".", `Arsenic mg/kg`)))) |> 
   
-  mutate(`Cadmium mg/kg` = as.double(ifelse(grepl(c("^<"), `Cadmium mg/kg`), round(as.numeric(gsub(",", ".", substring(`Cadmium mg/kg`, 3)))/3,2), gsub(",", ".", `Cadmium mg/kg`)))) |>
+  mutate(`Cadmium mg/kg` = as.double(ifelse(grepl(c("^<"), `Cadmium mg/kg`), as.numeric(gsub(",", ".", substring(`Cadmium mg/kg`, 3)))/3, gsub(",", ".", `Cadmium mg/kg`)))) |>
   
-  mutate(`Chromium mg/kg` = as.double(ifelse(grepl(c("^<"), `Chromium mg/kg`), round(as.numeric(gsub(",", ".", substring(`Chromium mg/kg`, 3)))/3,2), gsub(",", ".", `Chromium mg/kg`)))) |>
+  mutate(`Chromium mg/kg` = as.double(ifelse(grepl(c("^<"), `Chromium mg/kg`), as.numeric(gsub(",", ".", substring(`Chromium mg/kg`, 3)))/3, gsub(",", ".", `Chromium mg/kg`)))) |>
   
-  mutate(`Cobalt mg/kg` = as.double(ifelse(grepl(c("^<"), `Cobalt mg/kg`), round(as.numeric(gsub(",", ".", substring(`Cobalt mg/kg`, 3)))/3,2), gsub(",", ".", `Cobalt mg/kg`)))) |> 
+  mutate(`Cobalt mg/kg` = as.double(ifelse(grepl(c("^<"), `Cobalt mg/kg`), as.numeric(gsub(",", ".", substring(`Cobalt mg/kg`, 3)))/3, gsub(",", ".", `Cobalt mg/kg`)))) |> 
   
-  mutate(`Lead mg/kg` = as.double(ifelse(grepl(c("^<"), `Lead mg/kg`), round(as.numeric(gsub(",", ".", substring(`Lead mg/kg`, 3)))/3,2), gsub(",", ".", `Lead mg/kg`))))
+  mutate(`Lead mg/kg` = as.double(ifelse(grepl(c("^<"), `Lead mg/kg`), as.numeric(gsub(",", ".", substring(`Lead mg/kg`, 3)))/3, gsub(",", ".", `Lead mg/kg`))))
 
   #Pesticides
 pest_bees <- read_csv2("../data/pesticide_bees.csv")
@@ -62,14 +62,6 @@ treat_pest <- treat_pest |>
          Molecule = as.factor(Molecule))
 
 
-  #
-data_consolidé <- read_csv2("../data/pesticide_trait_bees.csv")
-data_consolidé <- data_consolidé |>
-  mutate(Date = as.Date(Date, format="%d/%m/%Y"),
-         Location = as.factor(Location), 
-         Hive = as.factor(Hive)) |> 
-  full_join(metals_bees, by=c("Date", "Location", "Hive"))
-data_consolidé[is.na(data_consolidé)] <- 0
 
 #Nettoyage du df metal et tests variabilité métaux inter intra
 df_metals_clean <- as.data.frame(metals_bees)
