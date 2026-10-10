@@ -372,7 +372,7 @@ shinyServer(function(input, output, session) {
   
   
   
-  
+#--------------------------------------------------------------------------------    
   
   ## ACP sur les concentrations de métaux lourds
   observeEvent(input$ACP_selectMetal, {
@@ -400,25 +400,37 @@ shinyServer(function(input, output, session) {
   })
   
   
-  res_acp <- eventReactive(input$maj_ACP, {
-    donnees <- isolate(
-      res_ACP <- metals_bees |> 
+  res_acp <- eventReactive(input$ACP_maj, {
+    donnees <- metals_bees |> 
         inner_join(soil_occup, by='Location') |> 
         filter(Hive %in% c(input$ACP_selectRuche, input$ACP_selectIndiv_Sup),
                Date >= input$ACP_selectDate[1], Date <= input$ACP_selectDate[2]) |> 
         select(1:3, input$ACP_selectMetal, input$ACP_selectSolOccup, input$ACP_selectMetal_Sup, input$ACP_selectSolOccup_Sup)
+    
+    
+    ind_sup <- which(donnees$Hive%in%input$ACP_selectIndiv_Sup)
+    args_pca <- list(
+      X = donnees,
+      scale.unit = TRUE,
+      quanti.sup = c(input$ACP_selectMetal_Sup,input$ACP_selectSolOccup_Sup),
+      quali.sup = 1:3,
+      graph = F
     )
-    PCA(donnees, scale.unit=T, 
-        quanti.sup=c(input$ACP_selectMetal_Sup, input$ACP_selectSolOccup_Sup), 
-        quali.sup=1:3, 
-        ind.sup=donnees$Hive%in%input$ACP_selectIndiv_Sup
-        )
+    if (length(ind_sup) > 0) {
+      args_pca$ind.sup <- ind_sup
+    }
+    
+    res_acp <- do.call(PCA, args_pca)
+    
   })
   
-  output$ACP_totalIndiv <- renderText({
-    input$ACP_selectIndiv_Sup
-    #which(metals_bees$Hive%in%input$ACP_selectIndiv_Sup)
+  output$ACP_Indic_IndivSup <- renderText({
+    input$ACP_maj
+    isolate({
+      "Les individus supplémentaires sont colorisés en rouge"
+    })
   })
+  
   output$Test <- renderTable({input$ACP_selectIndiv_Sup})
   
   ### Identification et sélection des axes
@@ -478,6 +490,96 @@ shinyServer(function(input, output, session) {
       title = "ACP - variables"
     )
   })
+  
+  ### Sous-onglet Tableaux de résultats
+  observeEvent(
+      input$ACP_maj,
+    {
+      # Choix toujours disponibles
+      choix <- c(
+        "Tableau des individus" = "1",
+        "Tableau des variables" = "3",
+        "Tableau des variables qualitatives supplémentaires" = "5"
+      )
+      
+      # Ajouter le tableau des individus supplémentaires
+      if (length(input$ACP_selectIndiv_Sup) > 0) {
+        choix <- c(
+          "Tableau des individus" = "1",
+          "Tableau des individus supplémentaires" = "2",
+          "Tableau des variables" = "3",
+          "Tableau des variables qualitatives supplémentaires" = "5"
+        )
+      }
+      
+      # Ajouter le tableau des variables quantitatives supplémentaires
+      if (
+        length(input$ACP_selectMetal_Sup) > 0 ||
+        length(input$ACP_selectSolOccup_Sup) > 0
+      ) {
+        choix <- c(
+          choix[names(choix) !=
+                  "Tableau des variables qualitatives supplémentaires"],
+          "Tableau des variables quantitatives supplémentaires" = "4",
+          "Tableau des variables qualitatives supplémentaires" = "5"
+        )
+      }
+      
+      # Conserver le choix courant s'il est toujours disponible
+      selection <- input$ACP_Tab_Select
+      
+      if (is.null(selection) || !selection %in% unname(choix)) {
+        selection <- unname(choix)[1]
+      }
+      
+      updateRadioButtons(
+        session,
+        inputId = "ACP_Tab_Select",
+        choices = choix,
+        selected = selection
+      )
+    },
+    ignoreInit = FALSE
+  )
+  
+  output$ACP_Tab_CoordInd <- renderTable({
+    res <- res_acp()
+    res$ind$coord
+  }, rownames=T)
+  
+  output$ACP_Tab_CoordIndSup <- renderTable({
+    res <- res_acp()
+    if (is.null(res$ind.sup)) return(NULL)
+    res$ind.sup$coord
+  }, rownames = T)
+  
+  output$ACP_Tab_CoordVar <- renderTable({
+    res <- res_acp()
+    res$var$coord
+  }, rownames = T)
+  
+  output$ACP_Tab_CoordQuantiSup <- renderTable({
+    res <- res_acp()
+    if (is.null(res$quanti.sup)) return(NULL)
+    res$quanti.sup$coord
+  }, rownames = T)
+  
+  output$ACP_Tab_CoordQualiSup <- renderTable({
+    res <- res_acp()
+    if (is.null(res$quali.sup)) return(NULL)
+    res$quali.sup$coord
+  }, rownames = T)
+  
+#--------------------------------------------------------------------------------  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   #Tests de student intra site 
