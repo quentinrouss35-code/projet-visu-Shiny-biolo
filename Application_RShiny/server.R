@@ -93,11 +93,11 @@ shinyServer(function(input, output, session) {
   
   metals_bees_explo <- reactive({
     df <- metals_bees |> 
-      filter(Location %in% input$cases_fonciers,
+      filter(Location %in% input$GMetaux_Select_Locations,
              Date >= input$Explo_selectDate[1], Date <= input$Explo_selectDate[2]) |> 
       arrange(Location) |> 
       rename(Metal = .data[[input$choix_metal]], Var_Compar = .data[[input$choix_compar_metal]])
-      
+    
     df
   })
   
@@ -108,10 +108,8 @@ shinyServer(function(input, output, session) {
     paste('Boîte à moustaches de la concentration de', metal, '(', conc, ')', 'selon', ifelse(input$choix_compar_metal=='Location', 'le foncier', 'les ruches d\'abeilles'))
   })
   output$boxPlot_Metal <- renderPlotly({
-    #input$maj_g_explo
-    #df <- ifelse(input$maj_g_explo==T, metals_bees_explo(), metals_bees |> filter(Location %in% input$cases_fonciers))
     df <- metals_bees_explo()
-      
+    
     isolate({
       metals_bees <- df |> 
         select(Metal, Var_Compar)
@@ -119,14 +117,14 @@ shinyServer(function(input, output, session) {
       ## Boxplot des taux du métal choisi selon le milieu
       plot_ly(metals_bees, 
               x = ~Var_Compar, 
-              y = ~Metal, 
+              y = ~ Metal, 
               color = ~Var_Compar,
               type = 'box', 
               colors=palette_compar()) |> 
         layout(
           #title = paste("Boîte à moustaches de la concentration de", input$choix_metal, "selon", ifelse(input$choix_compar_metal=="Location", "le foncier", "les ruches d'abeilles")),
-          yaxis = list(title = input$choix_metal), 
-          xaxis = list(title = input$choix_compar_metal),
+          yaxis = list(title = paste("Concentration en", input$choix_metal)), 
+          xaxis = list(title = ifelse(input$choix_compar_metal=="Location", "Localisation", "Ruche")),
           #hovermode = "x unified",
           legend = list(orientation = "h", y = -0.2)
         )
@@ -144,13 +142,6 @@ shinyServer(function(input, output, session) {
     df <- metals_bees_explo()
     
     isolate({
-      #metals_bees <- metals_bees |>
-        #arrange(Location) |> 
-        #rename(Metal = .data[[input$choix_metal]], Var_Compar = .data[[input$choix_compar_metal]]) |>
-        #group_by(Var_Compar, Date) |>
-        #summarize(Metal = mean(Metal)) |> 
-        #select(Var_Compar, Metal, Date)
-      
       metals_bees <- df |> 
         group_by(Var_Compar, Date) |>
         summarize(Metal = mean(Metal)) |> 
@@ -164,9 +155,8 @@ shinyServer(function(input, output, session) {
               mode = 'lines+markers',
               colors=palette_compar()) |> 
         layout(
-          #title = paste("Evolution temporelle de la concentration de", input$choix_metal, "selon", ifelse(input$choix_compar_metal=="Location", "le foncier", "les ruches d'abeilles")),
-          yaxis = list(title = input$choix_metal), 
-          xaxis = list(title = "Date of measurement"),
+          yaxis = list(title = paste("Concentration en ", input$choix_metal)), 
+          xaxis = list(title = "Date de prélèvement"),
           hovermode = "x unified",
           legend = list(orientation = "h", y = -0.2)
         )
@@ -191,7 +181,7 @@ shinyServer(function(input, output, session) {
       filter(Date >= input$metals_selectDate[1], Date <= input$metals_selectDate[2])
     
     metals_output <- metals_output |>
-      filter(Location %in% input$selectlocationmetals)
+      filter(Location %in% input$TabMetaux_Select_Locations)
     
     if ('Toutes' %in% input$selecthivemetals){
       validate(need(length(input$selecthivemetals) < 2, "Décocher 'Toutes' pour sélectionner des ruches."))
@@ -200,11 +190,6 @@ shinyServer(function(input, output, session) {
       metals_output <- metals_output |>
         filter(Hive %in% input$selecthivemetals)
     }
-    
-    
-    
-    
-    metals_output
     
   })
   
@@ -239,7 +224,7 @@ shinyServer(function(input, output, session) {
       filter(Date >= input$pest_selectDate[1], Date <= input$pest_selectDate[2])
     
     pest_bees <- pest_bees |>
-      filter(Location %in% input$selectlocationpest)
+      filter(Location %in% input$TabPest_Select_Locations)
     
     if('Tous' %in% input$appliedpest){
       pest_bees 
@@ -372,7 +357,7 @@ shinyServer(function(input, output, session) {
   
   
   
-#--------------------------------------------------------------------------------    
+  #--------------------------------------------------------------------------------    
   
   ## ACP sur les concentrations de métaux lourds
   observeEvent(input$ACP_selectMetal, {
@@ -382,6 +367,16 @@ shinyServer(function(input, output, session) {
       choices = setdiff(colnames(metals_bees[, 4:20]), input$ACP_selectMetal)
     )
   })
+  
+  observeEvent(input$GMetaux_Select_Locations,{
+    updateSelectInput(
+      session,
+      inputId = "Test",
+      choices = setdiff(unique(metals_bees$Location), input$GMetaux_Select_Locations),
+      selected = setdiff(unique(metals_bees$Location), input$GMetaux_Select_Locations)
+    )
+  })
+  
   
   observeEvent(input$ACP_selectSolOccup, {
     updateCheckboxGroupInput(
@@ -402,10 +397,10 @@ shinyServer(function(input, output, session) {
   
   res_acp <- eventReactive(input$ACP_maj, {
     donnees <- metals_bees |> 
-        inner_join(soil_occup, by='Location') |> 
-        filter(Hive %in% c(input$ACP_selectRuche, input$ACP_selectIndiv_Sup),
-               Date >= input$ACP_selectDate[1], Date <= input$ACP_selectDate[2]) |> 
-        select(1:3, input$ACP_selectMetal, input$ACP_selectSolOccup, input$ACP_selectMetal_Sup, input$ACP_selectSolOccup_Sup)
+      inner_join(soil_occup, by='Location') |> 
+      filter(Hive %in% c(input$ACP_selectRuche, input$ACP_selectIndiv_Sup),
+             Date >= input$ACP_selectDate[1], Date <= input$ACP_selectDate[2]) |> 
+      select(1:3, input$ACP_selectMetal, input$ACP_selectSolOccup, input$ACP_selectMetal_Sup, input$ACP_selectSolOccup_Sup)
     
     
     ind_sup <- which(donnees$Hive%in%input$ACP_selectIndiv_Sup)
@@ -424,13 +419,6 @@ shinyServer(function(input, output, session) {
     
   })
   
-  output$ACP_Indic_IndivSup <- renderText({
-    input$ACP_maj
-    isolate({
-      "Les individus supplémentaires sont colorisés en rouge"
-    })
-  })
-  
   
   #### Récupération du nombre de ruche pour le conditionalPanel qui affiche ou non les cases à cocher sur les groupes d'individus supplémentaires
   output$nb_hives <- reactive({
@@ -442,17 +430,17 @@ shinyServer(function(input, output, session) {
   
   
   
-  ### Identification et sélection des axes
+  #### Identification et sélection des axes
   output$ACP_graphDecompo <-renderPlot({
     res <- res_acp()
-    barplot(res$eig[, 2], main="Décomposition de l'inertie")
+    barplot(res$eig[, 2], main="Décomposition de l'inertie", xlab="Nombre de composantes", ylab="Inertie expliquée")
   })
   output$ACP_tabEigen <- renderTable({
     res <- res_acp()
     res$eig
   })
   
-  
+  #### Définition de la palette de l'argument habillage selon le choix de l'utilisateur
   palette_quali <- eventReactive(input$ACP_selectHabillage,{
     if (input$ACP_selectHabillage=="Location"){
       palette_foncier
@@ -476,6 +464,7 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### Construction du graphique des individus
   output$ACP_graphInd <- renderPlot({
     res <- res_acp()
     
@@ -501,9 +490,17 @@ shinyServer(function(input, output, session) {
       addEllipses = input$ACP_ellispe,
       select.ind = select_ind,
       add.ind.sup=T,
-      col.ind.sup = "red",
+      col.ind.sup = input$ACP_Color_IndivSup,
       title = "Graphique des individus"
-    )
+    )+
+      theme(
+        plot.title = element_text(
+          size = 16,
+          face = "bold",
+          colour = "black",
+          hjust = 0.5
+        )
+      )
   })
   
   #### Mise à jour de l'argument max du sliderInput de sélection de la contribution des variables
@@ -520,6 +517,7 @@ shinyServer(function(input, output, session) {
     )
     
   })
+  
   #### Construction du graphique des corrélations
   output$ACP_graphVar <- renderPlot({
     res <- res_acp()
@@ -537,13 +535,21 @@ shinyServer(function(input, output, session) {
         contrib = input$ACP_selectVarValue_Contrib
       )
     )
-
+    
     fviz_pca_var(
       res,
       axes=c(input$ACP_Axe1, input$ACP_Axe2),
       select.var = select_var,
       title = "Graphique des corrélations"
-    )
+    )+
+      theme(
+        plot.title = element_text(
+          size = 16,
+          face = "bold",
+          colour = "black",
+          hjust = 0.5
+        )
+      )
   })
   
   
@@ -661,7 +667,7 @@ shinyServer(function(input, output, session) {
       "  addEllipses = ", ellipses, ",\n",
       "  ", code_select_ind, ",\n",
       "  add.ind.sup = TRUE,\n",
-      "  col.ind.sup = \"red\",\n",
+      "  col.ind.sup = ", input$ACP_Color_IndivSup, ",\n",
       "  title = \"Graphique des individus\"\n",
       ")"
     )
@@ -710,7 +716,7 @@ shinyServer(function(input, output, session) {
   
   ### Sous-onglet Tableaux de résultats
   observeEvent(
-      input$ACP_maj,
+    input$ACP_maj,
     {
       # Choix toujours disponibles
       choix <- c(
@@ -787,7 +793,7 @@ shinyServer(function(input, output, session) {
     res$quali.sup$coord
   }, rownames = T)
   
-#--------------------------------------------------------------------------------  
+  #--------------------------------------------------------------------------------  
   
   
   

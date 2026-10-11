@@ -130,7 +130,7 @@ shinyUI(
                                    target = "_blank",
                                    style = "color: #C0C3C8;"),
                                  style = "color: #C0C3C8;"))
-             )),
+                      )),
              
              
              # Onglet d'analyse descriptive des différents jeux de données de l'étude
@@ -141,159 +141,205 @@ shinyUI(
                                  tabsetPanel(id = "Onglet_OccupSol",
                                              tabPanel("Tableau de données",
                                                       wellPanel(
-                                                      fluidRow(
-                                                        column(width = 12, checkboxGroupInput(inputId = "varloc1",
-                                                                                              label = "Variable : ", 
-                                                                                              choices = unique(soil_occup$Location), 
-                                                                                              selected=unique(soil_occup$Location), inline=TRUE)))),
-                                                        column(width = 12, dataTableOutput("data_table_soil")),
-                                                      column(width = 3, downloadButton("downloadData_soil", "Télécharger le tableau"))),
+                                                        fluidRow(
+                                                          column(width = 12,
+                                                                 selectInput(inputId="varloc1",
+                                                                             label="Sélectionnez une(des) localisations :",
+                                                                             choices=c(unique(soil_occup$Location)),
+                                                                             selected=c(unique(soil_occup$Location)),
+                                                                             multiple=T
+                                                                 )
+                                                          )
+                                                        ),
+                                                        column(width = 12, 
+                                                               dataTableOutput("data_table_soil")),
+                                                        column(width = 3, downloadButton("downloadData_soil", "Télécharger le tableau"))
+                                                      )
+                                             ),
                                              tabPanel("Graphiques",
                                                       wellPanel(
-                                                      fluidRow(
-                                                        column(width = 2, checkboxGroupInput(inputId = "varloc2", label = "Variable : ", 
-                                                                                             choices = unique(soil_occup$Location), 
-                                                                                             selected="Urban")))),
+                                                        fluidRow(
+                                                          column(width = 2,
+                                                                 selectInput(inputId="varloc2",
+                                                                             label="Sélectionnez une(des) localisations :",
+                                                                             choices=c(unique(soil_occup$Location)),
+                                                                             selected=c(unique(soil_occup$Location)[1]),
+                                                                             multiple=T
+                                                                 )
+                                                          )
+                                                        ),
                                                         column(width = 10, div(
                                                           style = "margin-bottom: 30px;",
-                                                          plotOutput("squarePie")))))
-                                 ),
-                                             
+                                                          plotOutput("squarePie")
+                                                        )
+                                                        )
+                                                      )
+                                             )
+                                 )
+                        ),
                         tabPanel("Traitement phytosanitaire dans les vignobles",
                                  tabsetPanel(id = "Onglet_PestTrait",
                                              tabPanel("Tableau de données",
                                                       wellPanel(
-                                                      fluidRow(
-                                                        column(width = 2, radioButtons(inputId = "vartreat", label = "Voir par : ", 
-                                                                                       choices = unique(colnames(treat_pest[,1:2])), 
-                                                                                       selected="Date", inline=TRUE)),
-                                                        column(width=3, offset=1,
-                                                               dateRangeInput(inputId = "treat_selectDate", label = ("Sélectionnez une période :"),
-                                                                              start = min(treat_pest$Date), end = max(treat_pest$Date), 
-                                                                              min = min(treat_pest$Date), max = max(treat_pest$Date), 
-                                                                              format = "dd-mm-yyyy", language = "fr", separator = " à ")),
-                                                        column(width=3, offset=1,
-                                                               selectInput(inputId="moleculeTrait", label=("Selectionnez une molécule :"),
-                                                                           choices=c(as.character(l_molecules),"Toutes"), selected="Toutes", multiple=T)))),
-                                                        dataTableOutput("data_table_treat"),
-                                                        column(width = 3, downloadButton("downloadTreat_pest", "Télécharger le tableau"))),
+                                                        fluidRow(
+                                                          column(width = 2, 
+                                                                 radioButtons(inputId = "vartreat", label = "Voir par : ", 
+                                                                              choices = unique(colnames(treat_pest[,1:2])), 
+                                                                              selected="Date", inline=TRUE)),
+                                                          column(width=3, offset=1,
+                                                                 dateRangeInput(inputId = "treat_selectDate", label = ("Sélectionnez une période :"),
+                                                                                start = min(treat_pest$Date), end = max(treat_pest$Date), 
+                                                                                min = min(treat_pest$Date), max = max(treat_pest$Date), 
+                                                                                format = "dd-mm-yyyy", language = "fr", separator = " à ")),
+                                                          column(width=3, offset=1,
+                                                                 selectInput(inputId="moleculeTrait", label=("Selectionnez une molécule :"),
+                                                                             choices=c(as.character(l_molecules),"Toutes"), selected="Toutes", multiple=T)))),
+                                                      dataTableOutput("data_table_treat"),
+                                                      column(width = 3, 
+                                                             downloadButton("downloadTreat_pest", "Télécharger le tableau"))),
                                              tabPanel("Frise",
-                                                      column(width = 12,div(img(src="Frise_treatment.png", width = "80%")), align="center",
+                                                      column(width = 12, 
+                                                             div(img(src="Frise_treatment.png", width = "80%")), align="center",
                                                              style = "margin-bottom: 30px;")
                                              ),
                                              tabPanel("Résumé",
                                                       verbatimTextOutput("SummaryTreat"))
                                  )
                         ),
-                        tabPanel("Pesticides détectés",
+                        tabPanel("Résidus de pesticides détectés",
                                  tabsetPanel(id = "Onglet_pest",
                                              tabPanel("Tableau de données",
                                                       wellPanel(
-                                                      fluidRow(
-                                                        column(width=4,checkboxInput("filtre_zero_pest",
-                                                                                     "Enlever les lignes ne contenant que des 0",
-                                                                                     value = FALSE, width='100%')),
-                                                        column(width=5, offset=3, radioButtons(inputId="appliedpest", label="",
-                                                                                               choices=c("Tous", "Traitements appliqués dans la parcelle adjacente"), 
-                                                                                               inline=TRUE)),
-                                                        column(width=4,selectInput(inputId="selecthivepest",
-                                                                                   label="Sélectionnez les ruches",
-                                                                                   choices=c("Toutes",as.character(pest_bees$Hive)),
-                                                                                   selected="Toutes",
-                                                                                   multiple=T
-                                                        )),
-                                                        column(width=4,dateRangeInput(inputId = "pest_selectDate", label = ("Sélectionnez une période :"),
-                                                                                      start = min(pest_bees$Date), end = max(pest_bees$Date), 
-                                                                                      min = min(pest_bees$Date), max = max(pest_bees$Date), 
-                                                                                      format = "dd-mm-yyyy", language = "fr", separator = " à ")),
-                                                        column(width=4,checkboxGroupInput(inputId="selectlocationpest",
-                                                                                          label="Sélectionnez les location",
-                                                                                          choices=unique(pest_bees$Location),
-                                                                                          selected=unique(pest_bees$Location)
-                                                        )))),
-                                                        dataTableOutput("table_Pest"),
-                                                        column(width = 12, downloadButton("downloadData_pest", "Télécharger le tableau"))
+                                                        fluidRow(
+                                                          column(width=4, 
+                                                                 checkboxInput("filtre_zero_pest",
+                                                                               "Enlever les lignes ne contenant que des 0",
+                                                                               value = FALSE, width='100%')),
+                                                          column(width=5, offset=3, 
+                                                                 radioButtons(inputId="appliedpest", label="",
+                                                                              choices=c("Tous", "Traitements appliqués dans la parcelle adjacente"), 
+                                                                              inline=TRUE)
+                                                          ),
+                                                          column(width=4,
+                                                                 selectInput(inputId="selecthivepest",
+                                                                             label="Sélectionnez les ruches",
+                                                                             choices=c("Toutes",as.character(pest_bees$Hive)),
+                                                                             selected="Toutes",
+                                                                             multiple=T
+                                                                 )
+                                                                 
+                                                          ),
+                                                          column(width=4,
+                                                                 dateRangeInput(inputId = "pest_selectDate", label = ("Sélectionnez une période :"),
+                                                                                start = min(pest_bees$Date), end = max(pest_bees$Date), 
+                                                                                min = min(pest_bees$Date), max = max(pest_bees$Date), 
+                                                                                format = "dd-mm-yyyy", language = "fr", separator = " à ")
+                                                          ),
+                                                          column(width=4,
+                                                                 selectInput(inputId="TabPest_Select_Locations",
+                                                                             label="Sélectionnez une(des) localisations :",
+                                                                             choices=c(unique(pest_bees$Location)),
+                                                                             selected=c(unique(pest_bees$Location)),
+                                                                             multiple=T
+                                                                 )
+                                                          )
+                                                        )
                                                       ),
+                                                      dataTableOutput("table_Pest"),
+                                                      column(width = 12, downloadButton("downloadData_pest", "Télécharger le tableau"))
+                                             ),
                                              tabPanel("Résumé",
                                                       verbatimTextOutput("SummaryPest"))
                                  )
                         ),
-                        tabPanel("Métaux détectés",
+                        tabPanel("Métaux lourds détectés",
                                  tabsetPanel(id = "Onglet_metaux",
                                              tabPanel("Tableau de données",
                                                       wellPanel(
-                                                      fluidRow(
-                                                        column(width = 6, selectInput(inputId = "varmet1",
-                                                                                      label = "Métaux : ", 
-                                                                                      choices = c("Tous",l_metaux), 
-                                                                                      selected= "Tous", multiple=T))
-                                                        ,
-                                                        column(width=6,selectInput(inputId="selecthivemetals",
-                                                                                   label="Sélectionnez les ruches",
-                                                                                   choices=c("Toutes",as.character(metals_bees$Hive)),
-                                                                                   selected="Toutes",
-                                                                                   multiple=T
-                                                        )),
-                                                        column(width=6,dateRangeInput(inputId = "metals_selectDate", label = ("Sélectionnez une période :"),
-                                                                                      start = min(metals_bees$Date), end = max(metals_bees$Date), 
-                                                                                      min = min(metals_bees$Date), max = max(metals_bees$Date), 
-                                                                                      format = "dd-mm-yyyy", language = "fr", separator = " à ")),
-                                                        
-                                                        column(width=6,checkboxGroupInput(inputId="selectlocationmetals",
-                                                                                          label="Sélectionnez les location",
-                                                                                          choices=unique(metals_bees$Location),
-                                                                                          selected=unique(metals_bees$Location)
-                                                        )))),
-                                                        dataTableOutput("table_Metaux"),
-                                                        column(width = 12, downloadButton("downloadData_metal", "Télécharger le tableau"))
+                                                        fluidRow(
+                                                          column(width = 6, 
+                                                                 selectInput(inputId = "varmet1",
+                                                                             label = "Sélectionnez un métal : ", 
+                                                                             choices = c("Tous",l_metaux), 
+                                                                             selected= "Tous", multiple=T)
+                                                          ),
+                                                          column(width=6, 
+                                                                 selectInput(inputId="selecthivemetals",
+                                                                             label="Sélectionnez une(des) ruche(s)",
+                                                                             choices=c("Toutes",as.character(metals_bees$Hive)),
+                                                                             selected="Toutes",
+                                                                             multiple=T
+                                                                 )
+                                                          ),
+                                                          column(width=6, 
+                                                                 dateRangeInput(inputId = "metals_selectDate", label = ("Sélectionnez une période :"),
+                                                                                start = min(metals_bees$Date), end = max(metals_bees$Date), 
+                                                                                min = min(metals_bees$Date), max = max(metals_bees$Date), 
+                                                                                format = "dd-mm-yyyy", language = "fr", separator = " à ")
+                                                          ),
+                                                          column(width=6,
+                                                                 selectInput(inputId="TabMetaux_Select_Locations",
+                                                                             label="Sélectionnez une(des) localisations :",
+                                                                             choices=c(unique(metals_bees$Location)),
+                                                                             selected=c(unique(metals_bees$Location)),
+                                                                             multiple=T
+                                                                 )
+                                                          )
+                                                        )
+                                                      ),
+                                                      dataTableOutput("table_Metaux"),
+                                                      column(width = 12, downloadButton("downloadData_metal", "Télécharger le tableau"))
                                              ),
                                              tabPanel("Graphiques",
                                                       wellPanel(
                                                         fluidRow(
-                                                          column(width=3,
-                                                                 selectInput(inputId = "choix_metal", label = "Choisissez le métal :",
+                                                          column(width=4,
+                                                                 selectInput(inputId = "choix_metal", label = "Sélectionnez un métal :",
                                                                              choices = l_metaux,
                                                                              multiple=F
                                                                  )
                                                           ),
-                                                          column(width=3,
-                                                                 selectInput(inputId = "choix_compar_metal", label = "Choisissez la strate :",
+                                                          column(width=4,
+                                                                 selectInput(inputId = "choix_compar_metal", label = "Sélectionnez une strate :",
                                                                              choices = c("Location", "Hive"),
                                                                              multiple=F
                                                                              
                                                                  )
                                                           ),
-                                                          column(width=3,
-                                                                 dateRangeInput(inputId = "Explo_selectDate", label = "Choisissez une période :",
+                                                          column(width=4,
+                                                                 dateRangeInput(inputId = "Explo_selectDate", label = "Sélectionnez une période :",
                                                                                 start = min(metals_bees$Date), end = max(metals_bees$Date), 
                                                                                 min = min(metals_bees$Date), max = max(metals_bees$Date), 
                                                                                 format = "dd-mm-yyyy", language = "fr", separator = " à "),
                                                           ),
-                                                          column(width=3,
-                                                                 checkboxGroupInput(inputId = "cases_fonciers", label = "Sélectionnez un(des) foncier(s) :", selected = unique(metals_bees$Location),
-                                                                                    choices = unique(metals_bees$Location), inline=T)
-                                                          )
                                                         ),
-                                                        #tags$hr(),
-                                                        #fluidRow(
-                                                          #actionButton("maj_g_explo", "Mettre à jour")
-                                                        #)
-                                                        
+                                                        fluidRow(
+                                                          column(width=4, offset=4,
+                                                                 selectInput(inputId="GMetaux_Select_Locations",
+                                                                             label="Filtrez les individus par une(des) localisations :",
+                                                                             choices=c(as.character(metals_bees$Location)),
+                                                                             selected=c(as.character(metals_bees$Location)),
+                                                                             multiple=T
+                                                                 )
+                                                          )
+                                                        )
                                                       ),
                                                       tags$br(),
                                                       fluidRow(
                                                         column(width=5,
                                                                tabsetPanel(
-                                                                 tabPanel(h4(textOutput("titre_boxPlotMetal"), style = "color: yellow; text-align: center;"),
-                                                                          plotlyOutput("boxPlot_Metal")
+                                                                 tabPanel(
+                                                                   h4(textOutput("titre_boxPlotMetal"), style = "color: yellow; text-align: center;"),
+                                                                   plotlyOutput("boxPlot_Metal")
                                                                  )
                                                                )
-                                                            
+                                                               
                                                         ),
                                                         column(width=7,
                                                                tabsetPanel(
-                                                                 tabPanel(h4(textOutput("titre_TempoMetal"), style = "color: yellow; text-align: center;"),
-                                                                          plotlyOutput("Tempo_Metal")
+                                                                 tabPanel(
+                                                                   h4(textOutput("titre_TempoMetal"), style = "color: yellow; text-align: center;"),
+                                                                   plotlyOutput("Tempo_Metal")
                                                                  )
                                                                )
                                                                
@@ -308,352 +354,376 @@ shinyUI(
                       )
              ), 
              tabPanel("Variabilité et comparaisons",
-                      navlistPanel( widths = c(2, 10),
-                                    tabPanel("Variabilité intra site",
-                                             fluidRow(
-                                               column(width=12, div(plotlyOutput("tTestIntraSite"
-                                               ),style = "margin-bottom: 275px;")),
-                                               column(width=12, card(
-                                                 style = "background-color: black; color: white;",
-                                                 card_header("Tests T intra sites"),
-                                                 card_body(
-                                                   p("Différence en log entre les deux ruches d'un même site, avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05, non corrigée pour les tests multiples).")
-                                                 )))
-                                             )),
-                                    tabPanel("Variabilité inter site",
-                                             fluidRow(
-                                               column(width=12, 
-                                                      div(plotlyOutput("TestInterSite"),
-                                                          style = "margin-bottom: 350px;")),
-                                               column(width=12, card(
-                                                 style = "background-color: black; color: white;",
-                                                 card_header("Tests de comparaison inter sites"),
-                                                 card_body(
-                                                   p("Différence en log entre les deux sites différents (1er site - 2e site), avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05).")
-                                                 ))
-                                               ),
-                                               column(width=12, card(
-                                                 style = "background-color: black; color: white;",
-                                                 card_header("Modèle utilisé avec lmer : "),
-                                                 card_body(withMathJax(
-                                                   helpText("$$\\log(\\text{Concentration}) \\sim \\text{Metal} \\times \\text{Location} + (1 \\mid \\text{Hive})$$")
-                                                 )))
-                                                 
-                                               )
-                                             )
-                                    )      
+                      navlistPanel(widths = c(2, 10),
+                                   tabPanel("Variabilité intra site",
+                                            fluidRow(
+                                              column(width=12, div(plotlyOutput("tTestIntraSite"
+                                              ),style = "margin-bottom: 275px;")),
+                                              column(width=12, card(
+                                                style = "background-color: black; color: white;",
+                                                card_header("Tests T intra sites"),
+                                                card_body(
+                                                  p("Différence en log entre les deux ruches d'un même site, avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05, non corrigée pour les tests multiples).")
+                                                )))
+                                            )),
+                                   tabPanel("Variabilité inter site",
+                                            fluidRow(
+                                              column(width=12, 
+                                                     div(plotlyOutput("TestInterSite"),
+                                                         style = "margin-bottom: 350px;")),
+                                              column(width=12, card(
+                                                style = "background-color: black; color: white;",
+                                                card_header("Tests de comparaison inter sites"),
+                                                card_body(
+                                                  p("Différence en log entre les deux sites différents (1er site - 2e site), avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05).")
+                                                ))
+                                              ),
+                                              column(width=12, card(
+                                                style = "background-color: black; color: white;",
+                                                card_header("Modèle utilisé avec lmer : "),
+                                                card_body(withMathJax(
+                                                  helpText("$$\\log(\\text{Concentration}) \\sim \\text{Metal} \\times \\text{Location} + (1 \\mid \\text{Hive})$$")
+                                                )))
+                                                
+                                              )
+                                            )
+                                   )      
                       )
              ),
              tabPanel("Effet des traitements phytosanitaires",
-                               tabsetPanel(
-                                 tabPanel("Sur les teneurs en métaux",
-                                          fluidRow(
-                                            column(6, wellPanel(
-                                              selectInput("tr_metaux", "Métaux à représenter :",
-                                                          choices = l_metaux, selected = l_metaux[1], multiple = TRUE))),
-                                            column(6, wellPanel(
-                                              checkboxGroupInput("tr_mols", "Molécules de traitement à afficher :",
-                                                                 choices = sort(unique(trimws(treat_pest$Molecule))),
-                                                                 selected = sort(unique(trimws(treat_pest$Molecule))))))
-                                          ),
-                                          fluidRow(
-                                            column(12,
-                                                   h3("Évolution des concentrations en métaux au cours du temps",
-                                                      style = "color: #FFD000; font-weight: bold; margin: 1rem 0;"),
-                                                   p("Pour chaque métal, la courbe montre l'évolution de la concentration mesurée dans les ruches au fil des dates d'échantillonnage. Les traits verticaux correspondent aux doses de pesticides appliquées sur le vignoble.",
-                                                     style = "color: #C0C3C8; margin-bottom: 1rem;")
-                                            )
-                                          ),
-                                          uiOutput("plots_metaux_trait")
+                      tabsetPanel(
+                        tabPanel("Sur les teneurs en métaux",
+                                 fluidRow(
+                                   column(6, wellPanel(
+                                     selectInput("tr_metaux", "Métaux à représenter :",
+                                                 choices = l_metaux, selected = l_metaux[1], multiple = TRUE))),
+                                   column(6, wellPanel(
+                                     checkboxGroupInput("tr_mols", "Molécules de traitement à afficher :",
+                                                        choices = sort(unique(trimws(treat_pest$Molecule))),
+                                                        selected = sort(unique(trimws(treat_pest$Molecule))))))
                                  ),
-                                 tabPanel("Sur les résidus de pesticides",
-                                          h3("Détection des résidus de pesticides chez les abeilles après traitement phytosanitaire",
+                                 fluidRow(
+                                   column(12,
+                                          h3("Évolution des concentrations en métaux au cours du temps",
                                              style = "color: #FFD000; font-weight: bold; margin: 1rem 0;"),
-                                          plotlyOutput("tr_pesti", height = "600px"),
-                                          br(),  
-                                          p(HTML("Chaque ligne correspond à un traitement appliqué sur le vignoble, défini par une molécule et sa date d'application. Chaque point représente un prélèvement d'abeilles sur le site : sa position sur l'axe horizontal indique le délai, en jours, entre l'application et la date du prélèvement. Les résidus de pesticides ont été mesurés dans les ruches toutes les trois semaines. Seuls les prélèvements réalisés dans une fenêtre de 90 jours après l’application du traitement sont retenus. Les dates de traitement proviennent du calendrier fourni par le viticulteur pour la parcelle la plus proche des ruches.
+                                          p("Pour chaque métal, la courbe montre l'évolution de la concentration mesurée dans les ruches au fil des dates d'échantillonnage. Les traits verticaux correspondent aux doses de pesticides appliquées sur le vignoble.",
+                                            style = "color: #C0C3C8; margin-bottom: 1rem;")
+                                   )
+                                 ),
+                                 uiOutput("plots_metaux_trait")
+                        ),
+                        tabPanel("Sur les résidus de pesticides",
+                                 h3("Détection des résidus de pesticides chez les abeilles après traitement phytosanitaire",
+                                    style = "color: #FFD000; font-weight: bold; margin: 1rem 0;"),
+                                 plotlyOutput("tr_pesti", height = "600px"),
+                                 br(),  
+                                 p(HTML("Chaque ligne correspond à un traitement appliqué sur le vignoble, défini par une molécule et sa date d'application. Chaque point représente un prélèvement d'abeilles sur le site : sa position sur l'axe horizontal indique le délai, en jours, entre l'application et la date du prélèvement. Les résidus de pesticides ont été mesurés dans les ruches toutes les trois semaines. Seuls les prélèvements réalisés dans une fenêtre de 90 jours après l’application du traitement sont retenus. Les dates de traitement proviennent du calendrier fourni par le viticulteur pour la parcelle la plus proche des ruches.
 Pour chaque molécule et chaque date de prélèvement, la valeur retenue est la concentration moyenne observée entre les deux ruches. « Positif » lorsque la concentration est supérieure à zéro, et « Négatif »  lorsque la molécule n'est pas détectée."),
-                                            style = "color: #C0C3C8; margin-bottom: 1rem;"),
-                                 )
-                               )
+                                   style = "color: #C0C3C8; margin-bottom: 1rem;"),
+                        )
+                      )
              ),
              
-             # second onglet Visualisation
+             # sous-onglet dédié à une ACP pour discriminer les ruches/localisations
              tabPanel("Profils de contamination", 
-                      tags$style(HTML("
-                        .multicol {
-                          column-count: 3;       /* Nombre de colonnes */
-                          column-gap: 20px;      /* Espace entre colonnes */
-                        }
-                        .multicol .checkbox {
-                          margin: 0;             /* Supprime marges inutiles */
-                        }
-                      ")),
-                                 # Sidebar with a slider input for number of bins
-                                 sidebarLayout(
-                                   sidebarPanel(
-                                     radioButtons(inputId = "ACP_Perso", label = NULL, choices=c("Personnalisation de l'ACP"=1, "Personnalisation des graphiques"=2, "Afficher le code"=3), selected=1),
-                                     conditionalPanel(
-                                       condition = "input.ACP_Perso == 1",
-                                       wellPanel(
-                                         p("Sélectionnez les variables que vous voulez analyser :"),
-                                         p("- Métaux lourds :", style = "text-indent: 10px;"),
-                                         div(class="multicol", 
-                                             checkboxGroupInput(inputId = "ACP_selectMetal", label=NULL, selected = colnames(metals_bees[, -c(1:3)]), inline=T,
-                                                                choices = colnames(metals_bees[, -c(1:3)]))
+                      
+                      tags$style(
+                        HTML(
+                          "
+                          .multicol {
+                            column-count: 3;       /* Nombre de colonnes */
+                            column-gap: 20px;      /* Espace entre colonnes */
+                          }
+                          .multicol .checkbox {
+                            margin: 0;             /* Supprime marges inutiles */
+                          }
+                          
+                          .center_table {
+                            display:flex;
+                            text-align:center;
+                            align-items:center;
+                            height:100%;
+                            justify-content:center;
+                          }
+                          
+                          html, body, .container-fluid{
+                            height:100%;
+                          }
+                        "
+                        )
+                      ),
+                      
+                      sidebarLayout(
+                        sidebarPanel(
+                          checkboxInput(inputId = "ACP_PersoData", label = "Personnalisation de l'ACP", value=F),
+                          conditionalPanel(
+                            condition = "input.ACP_PersoData == true",
+                            wellPanel(
+                              p("Sélectionnez les variables à analyser :"),
+                              p("• Métaux lourds :", style = "text-indent: 10px;"),
+                              div(class="multicol", 
+                                  checkboxGroupInput(inputId = "ACP_selectMetal", label=NULL, selected = colnames(metals_bees[, -c(1:3)]), inline=T,
+                                                     choices = colnames(metals_bees[, -c(1:3)]))
+                              ),
+                              tags$br(),
+                              p("• Composition de l'occupation des sols :", style = "text-indent: 10px;"),
+                              div(
+                                checkboxGroupInput(inputId = "ACP_selectSolOccup", label=NULL, selected = colnames(soil_occup[, -c(1)]), inline=T,
+                                                   choices = colnames(soil_occup[, -c(1)]))
+                              ),
+                              
+                              tags$hr(),
+                              p("Sélectionnez la(es) ruche(s) à analyser :"),
+                              checkboxGroupInput(inputId = "ACP_selectRuche", label=NULL, inline=T,
+                                                 selected = unique(metals_bees$Hive),
+                                                 choices = unique(metals_bees$Hive)
+                              ),
+                              tags$hr(),
+                              p("Sélectionnez la période :"),
+                              dateRangeInput(inputId = "ACP_selectDate", label = NULL,
+                                             start = min(metals_bees$Date), end = max(metals_bees$Date), 
+                                             min = min(metals_bees$Date), max = max(metals_bees$Date), 
+                                             format = "dd-mm-yyyy", language = "fr", separator = " à "),
+                              
+                              conditionalPanel(
+                                condition = "input.ACP_selectMetal.length < 17 || input.ACP_selectSolOccup.length < 6",
+                                tags$hr(),
+                                p("Sélectionnez les variables quantitatives supplémentaires :"),
+                                conditionalPanel(
+                                  condition = "input.ACP_selectMetal.length < 17",
+                                  p("• Métaux lourds :", style = "text-indent: 10px;"),
+                                  div(class="multicol",
+                                      checkboxGroupInput(inputId = "ACP_selectMetal_Sup", label=NULL, inline=T,
+                                                         choices = NULL)
+                                  )
+                                ),
+                                conditionalPanel(
+                                  condition = "input.ACP_selectSolOccup.length < 6",
+                                  p("• Composition de l'occupation des sols :", style = "text-indent: 10px;"),
+                                  div(class="multicol",
+                                      checkboxGroupInput(inputId = "ACP_selectSolOccup_Sup", label=NULL, inline=T,
+                                                         choices = NULL)
+                                  )
+                                )
+                              ),
+                              conditionalPanel(
+                                condition = "input.ACP_selectRuche.length < 8",
+                                tags$hr(),
+                                p("Sélectionnez les groupes d'individus supplémentaires :"),
+                                div(class="multicol",
+                                    checkboxGroupInput(inputId = "ACP_selectIndiv_Sup", label=NULL, inline=T,
+                                                       choices = NULL)
+                                )
+  
+                              ),
+                              tags$hr(),
+                              fluidRow(
+                                column(width=12, align="center",
+                                       actionButton("ACP_maj", "Mettre à jour")
+                                )
+                              )
+                              
+                            )
+                            
+                          ),
+                          tags$br(),
+                          checkboxInput(inputId = "ACP_PersoGraphs", label = "Personnalisation des graphiques", value=F),
+                          conditionalPanel(
+                            condition = "input.ACP_PersoGraphs == true",
+                            wellPanel(
+                              numericInput(inputId = "ACP_Axe1", label = "Sélectionnez les deux axes à représenter :", value = 1, min=1, max=5),
+                              numericInput(inputId = "ACP_Axe2", label = NULL, value = 2, min=1, max=5),
+                              tags$hr(),
+                              
+                              p("Sélectionnez le graphique à personnaliser : "),
+                              radioButtons("ACP_selectGraphPerso", label=NULL, choices=c("individus", "variables"), selected="individus", inline=T),
+                              conditionalPanel(
+                                condition = "input.ACP_selectGraphPerso == 'individus'",
+                                wellPanel(
+                                  p("Représenter l'habillage :"),
+                                  radioButtons(inputId="ACP_selectHabillage", label=NULL, inline=T, choices=c("Hive", "Location", "Pas d'habillage"), selected="Pas d'habillage"),
+                                  tags$hr(),
+                                  p("Représenter l'(es) ellipse(s) :"),
+                                  checkboxInput(inputId="ACP_ellispe", label=NULL),
+                                  tags$hr(),
+                                  p("Sélection des individus :"),
+                                  selectInput(
+                                    inputId = "ACP_selectInd",
+                                    label = "    • Selon :",
+                                    choices = c(
+                                      "Coordonnées" = "none",
+                                      "Cos²" = "cos2",
+                                      "Contribution" = "contrib"
+                                    ),
+                                    selected = "none"
+                                  ),
+                                  conditionalPanel(
+                                    condition = "input.ACP_selectInd == 'cos2'",
+                                    sliderInput(
+                                      inputId = "ACP_selectIndValue_Cos2",
+                                      label = "Seuil de sélection (%) :",
+                                      min=0,
+                                      max=1,
+                                      value=0
+                                    )),
+                                  conditionalPanel(
+                                    condition = "input.ACP_selectInd == 'contrib'",
+                                    sliderInput(
+                                      inputId = "ACP_selectIndValue_Contrib",
+                                      label = "Seuil de sélection (%) :",
+                                      min=1,
+                                      max=nrow(metals_bees),
+                                      value=2
+                                    )
+                                  )
+                                ),
+                                conditionalPanel(
+                                  condition = "input.ACP_selectIndiv_Sup != 0",
+                                  colourInput(inputId = "ACP_Color_IndivSup", label = "Couleur des individus supplémentaires:", value='red')
+                                )
+                                
+                              ),
+                              conditionalPanel(
+                                condition = "input.ACP_selectGraphPerso == 'variables'",
+                                wellPanel(
+                                  p("Sélection des variables :", style="font-weight:bold"),
+                                  selectInput(
+                                    inputId = "ACP_selectVar",
+                                    label = "    • Selon :",
+                                    choices = c(
+                                      "Coordonnées" = "none",
+                                      "Cos²" = "cos2",
+                                      "Contribution" = "contrib"
+                                    ),
+                                    selected = "none"
+                                  ),
+                                  conditionalPanel(
+                                    condition = "input.ACP_selectVar == 'cos2'",
+                                    sliderInput(
+                                      inputId = "ACP_selectVarValue_Cos2",
+                                      label = "Seuil de sélection (%) :",
+                                      min=0,
+                                      max=1,
+                                      value=0
+                                    )),
+                                  conditionalPanel(
+                                    condition = "input.ACP_selectVar == 'contrib'",
+                                    sliderInput(
+                                      inputId = "ACP_selectVarValue_Contrib",
+                                      label = "Seuil de sélection (%) :",
+                                      min=1,
+                                      max=(ncol(metals_bees)-3),
+                                      value=2
+                                    )
+                                  )
+                                )
+                              )                                         
+                            )
+                          ),
+                          tags$br(),
+                          checkboxInput(inputId = "ACP_ShowCode", label = "Afficher le code des graphiques et de l'ACP", value=F),
+                        ),
+                        
+                        # Graphiques de l'ACP
+                        mainPanel(
+                          tabsetPanel(
+                            tabPanel("Graphiques",
+                                     wellPanel(
+                                       fluidRow(
+                                         column(width=6,
+                                                plotOutput("ACP_graphDecompo") 
+                                                
                                          ),
-                                         tags$br(),
-                                         p("- Occupation du sol du foncier :", style = "text-indent: 10px;"),
-                                         div(
-                                           checkboxGroupInput(inputId = "ACP_selectSolOccup", label=NULL, selected = colnames(soil_occup[, -c(1)]), inline=T,
-                                                              choices = colnames(soil_occup[, -c(1)]))
-                                         ),
-                                         
-                                         tags$hr(),
-                                         p("Sélectionnez les ruches que vous voulez analyser :"),
-                                         div(class="multicol", 
-                                             checkboxGroupInput(inputId = "ACP_selectRuche", label=NULL, selected = unique(metals_bees$Hive), inline=T,
-                                                                choices = unique(metals_bees$Hive))
-                                         ),
-                                         tags$hr(),
-                                         p("Sélectionnez une période :"),
-                                         dateRangeInput(inputId = "ACP_selectDate", label = NULL,
-                                                        start = min(metals_bees$Date), end = max(metals_bees$Date), 
-                                                        min = min(metals_bees$Date), max = max(metals_bees$Date), 
-                                                        format = "dd-mm-yyyy", language = "fr", separator = " à "),
-                                         tags$hr(),
-                                         p("Sélectionnez les variables quantitatives supplémentaires :"),
-                                         p("- Métaux lourds :", style = "text-indent: 10px;"),
-                                         div(class="multicol",
-                                             checkboxGroupInput(inputId = "ACP_selectMetal_Sup", label=NULL, inline=T,
-                                                                choices = NULL)
-                                         ),
-                                         p("- Occupation du sol du foncier :", style = "text-indent: 10px;"),
-                                         div(class="multicol",
-                                             checkboxGroupInput(inputId = "ACP_selectSolOccup_Sup", label=NULL, inline=T,
-                                                                choices = NULL)
-                                         ),
-                                         tags$hr(),
-                                         p("Sélectionnez les groupes d'individus supplémentaires :"),
-                                         div(class="multicol",
-                                             checkboxGroupInput(inputId = "ACP_selectIndiv_Sup", label=NULL, inline=T,
-                                                                choices = NULL)
-                                         ),
-                                         tags$hr(),
-                                         fluidRow(
-                                           column(width=12, align="center",
-                                                  actionButton("ACP_maj", "Mettre à jour")
-                                           )
+                                         column(width=6,
+                                                div(class='center_table', tableOutput("ACP_tabEigen"))
                                          )
-                                         
+                                       )
+                                     ),
+                                     tags$hr(),
+                                     wellPanel(
+                                       fluidRow(
+                                         column(width=6,
+                                                plotOutput("ACP_graphInd"),
+                                                
+                                                conditionalPanel(
+                                                  condition = "input.ACP_ShowCode == true",
+                                                  verbatimTextOutput("ACP_codeGraphInd")
+                                                )
+                                                
+                                         ),
+                                         column(width=6,
+                                                plotOutput("ACP_graphVar"),
+                                                conditionalPanel(
+                                                  condition = "input.ACP_ShowCode == true",
+                                                  verbatimTextOutput("ACP_codeGraphCorr")
+                                                )
+                                                
+                                         )
+                                       )
+                                     ),
+                                     conditionalPanel(
+                                       condition = "input.ACP_ShowCode == true",
+                                       verbatimTextOutput("ACP_codePCA")
+                                     )
+                                     
+                                     
+                            ),
+                            
+                            tabPanel("Tableaux de résultats",
+                                     tags$br(),
+                                     radioButtons(inputId = "ACP_Tab_Select", label = NULL, choices=c("Tableau des individus"=1, "Tableau des variables"=3, "Tableau des variables qualitatives supplémentaires"=5), selected=1, inline=T),
+                                     conditionalPanel(
+                                       condition = "input.ACP_Tab_Select == 1",
+                                       fluidRow(
+                                         div(class='center_table',
+                                             tableOutput("ACP_Tab_CoordInd")
+                                         )
                                        )
                                        
                                      ),
                                      conditionalPanel(
-                                       condition = "input.ACP_Perso == 2",
-                                       wellPanel(
-                                         numericInput(inputId = "ACP_Axe1", label = "Sélectionnez les deux axes à représenter :", value = 1, min=1, max=5),
-                                         numericInput(inputId = "ACP_Axe2", label = NULL, value = 2, min=1, max=5),
-                                         tags$hr(),
-                                         
-                                         p("Sélectionnez le graphique à personnaliser : "),
-                                         radioButtons("ACP_selectGraphPerso", label=NULL, choices=c("individus", "variables"), selected="individus", inline=T),
-                                         conditionalPanel(
-                                           condition = "input.ACP_selectGraphPerso == 'individus'",
-                                           wellPanel(
-                                             p("Représenter l'habillage :"),
-                                             radioButtons(inputId="ACP_selectHabillage", label=NULL, inline=T, choices=c("Hive", "Location", "Pas d'habillage"), selected="Pas d'habillage"),
-                                             
-                                             p("Représenter les ellipses :"),
-                                             checkboxInput(inputId="ACP_ellispe", label="Ellipse ?"),
-                                             
-                                             p("Sélection des individus :"),
-                                             selectInput(
-                                               inputId = "ACP_selectInd",
-                                               label = "Selon :",
-                                               choices = c(
-                                                 "Coordonnées" = "none",
-                                                 "Cos²" = "cos2",
-                                                 "Contribution" = "contrib"
-                                               ),
-                                               selected = "none"
-                                             ),
-                                             conditionalPanel(
-                                               condition = "input.ACP_selectInd == 'cos2'",
-                                               sliderInput(
-                                                 inputId = "ACP_selectIndValue_Cos2",
-                                                 label = "Seuil de sélection (%) :",
-                                                 min=0,
-                                                 max=1,
-                                                 value=0
-                                               )),
-                                             conditionalPanel(
-                                               condition = "input.ACP_selectInd == 'contrib'",
-                                               sliderInput(
-                                                 inputId = "ACP_selectIndValue_Contrib",
-                                                 label = "Seuil de sélection (%) :",
-                                                 min=1,
-                                                 max=nrow(metals_bees),
-                                                 value=2
-                                               )
-                                             )
-                                           )
-                                         ),
-                                         conditionalPanel(
-                                           condition = "input.ACP_selectGraphPerso == 'variables'",
-                                           wellPanel(
-                                             p("Sélection des variables :", style="font-weight:bold"),
-                                             selectInput(
-                                               inputId = "ACP_selectVar",
-                                               label = "Selon :",
-                                               choices = c(
-                                                 "Coordonnées" = "none",
-                                                 "Cos²" = "cos2",
-                                                 "Contribution" = "contrib"
-                                               ),
-                                               selected = "none"
-                                             ),
-                                             conditionalPanel(
-                                               condition = "input.ACP_selectVar == 'cos2'",
-                                               sliderInput(
-                                                 inputId = "ACP_selectVarValue_Cos2",
-                                                 label = "Seuil de sélection (%) :",
-                                                 min=0,
-                                                 max=1,
-                                                 value=0
-                                               )),
-                                             conditionalPanel(
-                                               condition = "input.ACP_selectVar == 'contrib'",
-                                               sliderInput(
-                                                 inputId = "ACP_selectVarValue_Contrib",
-                                                 label = "Seuil de sélection (%) :",
-                                                 min=1,
-                                                 max=(ncol(metals_bees)-3),
-                                                 value=2
-                                               )
-                                             )
-                                           )
-                                         )                                         
+                                       condition = "input.ACP_Tab_Select == 2",
+                                       fluidRow(
+                                         div(class='center_table',
+                                                tableOutput("ACP_Tab_CoordIndSup")
+                                         )
                                        )
-                                     )
-                                   ),
-                                   
-                                   # Graphiques de l'ACP
-                                   mainPanel(
-                                     tabsetPanel(
-                                       tabPanel("Graphiques",
-                                                wellPanel(
-                                                  fluidRow(
-                                                    column(width=6,
-                                                           #conditionalPanel(
-                                                           #condition = "input.ACP_maj == true",
-                                                           #tabsetPanel(
-                                                           #tabPanel(h4("Décomposition de l'inertie", style = "color: yellow; text-align: center;"),
-                                                           plotOutput("ACP_graphDecompo") 
-                                                           #)
-                                                           #)
-                                                           #)
-                                                           
-                                                    ),
-                                                    column(width=6,
-                                                           tags$br(),
-                                                           tags$br(),
-                                                           tags$br(),
-                                                           tags$br(),
-                                                           tableOutput("ACP_tabEigen")
-                                                    )
-                                                  )
-                                                ),
-                                                tags$hr(),
-                                                wellPanel(
-                                                  fluidRow(
-                                                    column(width=6,
-                                                           plotOutput("ACP_graphInd"),
-                                                           conditionalPanel(
-                                                             condition = "input.ACP_selectIndiv_Sup.length > 0",
-                                                             textOutput("ACP_Indic_IndivSup")
-                                                             
-                                                           ),
-                                                           conditionalPanel(
-                                                             condition = "input.ACP_Perso == 3",
-                                                             verbatimTextOutput("ACP_codeGraphInd")
-                                                           )
-                                                           
-                                                    ),
-                                                    column(width=6,
-                                                           plotOutput("ACP_graphVar"),
-                                                           conditionalPanel(
-                                                             condition = "input.ACP_Perso == 3",
-                                                             verbatimTextOutput("ACP_codeGraphCorr")
-                                                           )
-                                                           
-                                                    )
-                                                  )
-                                                ),
-                                                conditionalPanel(
-                                                  condition = "input.ACP_Perso == 3",
-                                                  verbatimTextOutput("ACP_codePCA")
-                                                )
-                                                
-                                                
-                                       ),
                                        
-                                       tabPanel("Tableaux de résultats",
-                                                tags$br(),
-                                                radioButtons(inputId = "ACP_Tab_Select", label = NULL, choices=c("Tableau des individus"=1, "Tableau des variables"=3, "Tableau des variables qualitatives supplémentaires"=5), selected=1, inline=T),
-                                                conditionalPanel(
-                                                  condition = "input.ACP_Tab_Select == 1",
-                                                  fluidRow(
-                                                    column(width=4, offset=3,
-                                                           tableOutput("ACP_Tab_CoordInd")
-                                                    )
-                                                  )
-                                                  
-                                                ),
-                                                conditionalPanel(
-                                                  condition = "input.ACP_Tab_Select == 2",
-                                                  fluidRow(
-                                                    column(width=4, offset=3,
-                                                           tableOutput("ACP_Tab_CoordIndSup")
-                                                    )
-                                                  )
-                                                  
-                                                ),
-                                                conditionalPanel(
-                                                  condition = "input.ACP_Tab_Select == 3",
-                                                  fluidRow(
-                                                    column(width=4, offset=3,
-                                                           tableOutput("ACP_Tab_CoordVar")
-                                                    )
-                                                  )
-                                                  
-                                                ),
-                                                conditionalPanel(
-                                                  condition = "input.ACP_Tab_Select == 4",
-                                                  fluidRow(
-                                                    column(width=4, offset=3,
-                                                           tableOutput("ACP_Tab_CoordQuantiSup")
-                                                    )
-                                                  )
-                                                  
-                                                ),
-                                                conditionalPanel(
-                                                  condition = "input.ACP_Tab_Select == 5",
-                                                  fluidRow(
-                                                    column(width=4, offset=3,
-                                                           tableOutput("ACP_Tab_CoordQualiSup")
-                                                    )
-                                                  )
-                                                  
-                                                )
-                                                
+                                     ),
+                                     conditionalPanel(
+                                       condition = "input.ACP_Tab_Select == 3",
+                                       fluidRow(
+                                         div(class='center_table',
+                                                tableOutput("ACP_Tab_CoordVar")
+                                         )
                                        )
+                                       
+                                     ),
+                                     conditionalPanel(
+                                       condition = "input.ACP_Tab_Select == 4",
+                                       fluidRow(
+                                         div(class='center_table',
+                                             tableOutput("ACP_Tab_CoordQuantiSup")
+                                         )
+                                       )
+                                       
+                                     ),
+                                     conditionalPanel(
+                                       condition = "input.ACP_Tab_Select == 5",
+                                       fluidRow(
+                                         div(class='center_table',
+                                             tableOutput("ACP_Tab_CoordQualiSup")
+                                         )
+                                       )
+                                       
                                      )
-                                   )
-                                 )
+                                     
+                            )
+                          )
+                        )
+                      )
              )
              
              
   )
-  
 )
