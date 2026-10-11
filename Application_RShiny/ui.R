@@ -356,6 +356,14 @@ shinyUI(
                                                                  choices = sort(unique(trimws(treat_pest$Molecule))),
                                                                  selected = sort(unique(trimws(treat_pest$Molecule))))))
                                           ),
+                                          fluidRow(
+                                            column(12,
+                                                   h3("Évolution des concentrations en métaux au cours du temps",
+                                                      style = "color: #FFD000; font-weight: bold; margin: 1rem 0;"),
+                                                   p("Pour chaque métal, la courbe montre l'évolution de la concentration mesurée dans les ruches au fil des dates d'échantillonnage. Les traits verticaux correspondent aux doses de pesticides appliquées sur le vignoble.",
+                                                     style = "color: #C0C3C8; margin-bottom: 1rem;")
+                                            )
+                                          ),
                                           uiOutput("plots_metaux_trait")
                                  ),
                                  tabPanel("Sur les résidus de pesticides",
