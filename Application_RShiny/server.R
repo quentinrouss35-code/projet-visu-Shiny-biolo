@@ -940,23 +940,56 @@ shinyServer(function(input, output, session) {
         legend = list(orientation = "h", y = -0.08)
       )
   })
-  output$tr_pesti <- renderPlot({
-    ggplot(df_pesti, aes(x = delai, y = event)) +
-      geom_vline(xintercept = 0, linetype = "dashed", colour = "grey30") +
-      geom_point(aes(fill = detecte, colour = detecte), shape = 21, size = 5, stroke = 1) +
-      scale_fill_manual(name = NULL,
-                        values = c("TRUE" = "orange", "FALSE" = "white"),
-                        labels = c("TRUE" = "Positif", "FALSE" = "Négatif")) +
-      scale_colour_manual(name = NULL,
-                          values = c("TRUE" = "orange", "FALSE" = "grey50"),
-                          labels = c("TRUE" = "Positif", "FALSE" = "Négatif")) +
-      labs(title = "Détection de résidus de pesticides chez les abeilles après traitement sur le site du vignoble",
-           x = "Nombre de jours après l'application", y = NULL) +
-      theme_minimal(base_size = 14) +
-      theme(panel.grid.major.x = element_line(colour = "grey85", linewidth = 0.4),
-            panel.grid.major.y = element_line(colour = "grey85", linewidth = 0.4),
-            panel.grid.minor   = element_blank(),
-            legend.position    = "top")
+  output$tr_pesti <- renderPlotly({
+    
+    d <- df_pesti |>
+      mutate(
+        texte = paste0(
+          "<b>", Molecule, "</b><br>",
+          "Date de la mesure : ", format(Date, "%d/%m/%Y"), "<br>",
+          ifelse(detecte,
+                 paste0("Dose détectée : ", round(conc, 2), " ng/g"),
+                 "Non détecté")
+        )
+      )
+    
+    d_pos <- d |> filter(detecte)
+    d_neg <- d |> filter(!detecte)
+    
+    plot_ly() |>
+      add_trace(data = d_neg, x = ~delai, y = ~event,
+                type = "scatter", mode = "markers",
+                name = "Négatif",
+                marker = list(color = "white", size = 13,
+                              line = list(color = "grey50", width = 2)),
+                text = ~texte, hoverinfo = "text") |>
+      add_trace(data = d_pos, x = ~delai, y = ~event,
+                type = "scatter", mode = "markers",
+                name = "Positif",
+                marker = list(color = "orange", size = 13,
+                              line = list(color = "orange", width = 2)),
+                text = ~texte, hoverinfo = "text") |>
+      layout(
+        title = NULL,
+        xaxis = list(
+          title = list(text = "<b>Nombre de jours après l'application</b>",
+                       font = list(size = 18)),
+          zeroline = FALSE
+        ),
+        yaxis = list(
+          title = list(text = "<b>Traitement appliqué : molécule (date d'application)</b>",
+                       font = list(size = 18)),
+          categoryorder = "array",
+          categoryarray = levels(d$event),
+          automargin = TRUE
+        ),
+        shapes = list(list(                              # ligne pointillée à 0
+          type = "line", x0 = 0, x1 = 0, y0 = 0, y1 = 1, yref = "paper",
+          line = list(color = "grey30", dash = "dash", width = 1.5)
+        )),
+        legend = list(orientation = "h", y = 1.05, x = 0.5, xanchor = "center"),
+        hovermode = "closest"
+      )
   })
   
   #Résumés 

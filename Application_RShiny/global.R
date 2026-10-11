@@ -180,7 +180,7 @@ col_mols <- setNames(hcl.colors(length(mols_all), "Dark 3"), mols_all)
 
 #prétraitement données effet du traitement sur les résidus de pesticides mesurés
 SITE    <- "Vineyard"   # "Vineyard", "Suburban", "Urban" ou "Forest"
-MAX_LAG <- 60           # fenêtre après traitement (jours)
+MAX_LAG <- 90           # fenêtre après traitement (jours)
 
 residus <- pest_bees |>
   filter(Location == SITE) |>
@@ -188,7 +188,7 @@ residus <- pest_bees |>
                names_to = "Molecule", values_to = "conc") |>
   mutate(Molecule = tolower(trimws(str_remove(Molecule, "^Pest_")))) |>  # "Pest_dimethomorph " -> "dimethomorph"
   group_by(Molecule, Date) |>
-  summarise(conc = max(conc, na.rm = TRUE), .groups = "drop")
+  summarise(conc = mean(conc, na.rm = TRUE), .groups = "drop")
 
 traitements <- treat_pest |>
   mutate(Molecule = tolower(trimws(as.character(Molecule)))) |>
@@ -200,7 +200,9 @@ df_pesti <- inner_join(traitements, residus, by = "Molecule",
   mutate(delai = as.numeric(Date - Date_trait)) |>
   filter(delai >= 0, delai <= MAX_LAG) |>
   mutate(event = paste0(Molecule, " (", format(Date_trait, "%d/%m"), ")"),
-         event = fct_reorder(event, Date_trait, .desc = TRUE))  # ancien en haut
+         event = fct_reorder(event, Date_trait, .desc = TRUE))  
 
 df_pesti <- df_pesti |> mutate(detecte = conc > 0)
+
+
 
