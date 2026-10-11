@@ -876,6 +876,7 @@ shinyServer(function(input, output, session) {
     
     trait  <- treat_clean |> filter(Molecule %in% input$tr_mols)
     mols_i <- as.character(trait$Molecule)
+    n <- length(input$tr_metaux)
     
     # Un graphique par métal, empilés avec un axe des dates partagé 
     plots <- lapply(seq_along(input$tr_metaux), function(k) {
@@ -906,19 +907,35 @@ shinyServer(function(input, output, session) {
           type = "scatter", mode = "lines", inherit = FALSE,
           line = list(color = col_mols[[mol]], dash = "dash", width = 2),
           name = mol, legendgroup = mol,
-          showlegend = (k == 1) && !(mol %in% mols_i[seq_len(i - 1)]),  # 1 entrée de légende par molécule
+          showlegend = (k == 1) && !(mol %in% mols_i[seq_len(i - 1)]),  
           text = paste0(mol, "<br>Dose : ", trait$Dose[i], " g/ha"),
           hoverinfo = "text"
         )
       }
       
-      p |> layout(yaxis = list(title = metal))
+      p |> layout(yaxis = list(title = paste("Concentrations en", metal)))
+    })
+    
+    marge <- 0.04
+    h     <- (1 - marge * (n - 1)) / n          
+    etiquettes <- lapply(seq_len(n), function(k) {
+      list(
+        text = paste0("<b>", input$tr_metaux[k], "</b>"),
+        xref = "paper", yref = "paper",
+        x = 0.99, y = 1 - (k - 1) * (h + marge),  
+        xanchor = "right", yanchor = "top",  
+        showarrow = FALSE,
+        font = list(size = 18, color = "#151617"),
+        bgcolor = "#FFD000",
+        bordercolor = "#151617", borderwidth = 1, borderpad = 6
+      )
     })
     
     subplot(plots, nrows = length(plots), shareX = TRUE, titleY = TRUE, margin = 0.04) |>
       layout(
-        title = "Évolution des concentrations au site Vignoble",
+        title = NULL,
         xaxis = list(title = "Date"),
+        annotations = etiquettes,
         hovermode = "closest",
         legend = list(orientation = "h", y = -0.08)
       )
