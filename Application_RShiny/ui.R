@@ -42,6 +42,8 @@ shinyUI(
                       ),
                       fluidRow(
                         column(12,
+                               h3("Les chiffres clefs",
+                                  style = "color: #FFD000; font-weight: bold; margin: 1rem 0;"),
                                layout_column_wrap(
                                  width = 1/5,
                                  value_box(
@@ -79,6 +81,8 @@ shinyUI(
                       ),
                       fluidRow(
                         column(6,
+                               h3("Présentation des 4 jeux de données",
+                                  style = "color: #FFD000; font-weight: bold; margin: 1rem 0;"),
                                layout_column_wrap(
                                  width = 1/2,          
                                  height = "600px",     
@@ -109,10 +113,24 @@ shinyUI(
                                )
                         ),
                         column(6,
+                               h3("Localisation des 4 sites",
+                                  style = "color: #FFD000; font-weight: bold; margin: 1rem 0;"),
                                leafletOutput("Carte", height = "600px")
                         )
-                      )
-             ),
+                      ),
+                      fluidRow(
+                        column(12,
+                               h5("Bibliographie",
+                                  style = "color: #C0C3C8; font-weight: bold; margin: 1rem 0;"),
+                               p("Tison, L., et al. (2026). Vineyard footprint revealed by honey bees used as sentinels for organic and inorganic contaminants in contrasted environments. ",
+                                 em("Peer Community Journal"),
+                                 ", 6, e85. ",
+                                 a("https://doi.org/10.24072/pcjournal.774",
+                                   href = "https://doi.org/10.24072/pcjournal.774",
+                                   target = "_blank",
+                                   style = "color: #C0C3C8;"),
+                                 style = "color: #C0C3C8;"))
+             )),
              
              
              # Onglet d'analyse descriptive des différents jeux de données de l'étude
