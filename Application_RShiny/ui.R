@@ -468,23 +468,38 @@ shinyUI(
                             wellPanel(
                               p("Sélectionnez les variables à analyser :"),
                               p("• Métaux lourds :", style = "text-indent: 10px;"),
-                              div(class="multicol", 
-                                  checkboxGroupInput(inputId = "ACP_selectMetal", label=NULL, selected = colnames(metals_bees[, -c(1:3)]), inline=T,
-                                                     choices = colnames(metals_bees[, -c(1:3)]))
+                              selectInput(inputId = "ACP_selectMetal", label=NULL, multiple=T, 
+                                          choices = colnames(metals_bees[, -c(1:3)]), 
+                                          selected = colnames(metals_bees[, -c(1:3)])
                               ),
+                              #div(class="multicol",
+                                  
+                                  #checkboxGroupInput(inputId = "ACP_selectMetal", label=NULL, selected = colnames(metals_bees[, -c(1:3)]), inline=T,
+                                                     #choices = colnames(metals_bees[, -c(1:3)]))
+                              #),
                               tags$br(),
                               p("• Composition de l'occupation des sols :", style = "text-indent: 10px;"),
-                              div(
-                                checkboxGroupInput(inputId = "ACP_selectSolOccup", label=NULL, selected = colnames(soil_occup[, -c(1)]), inline=T,
-                                                   choices = colnames(soil_occup[, -c(1)]))
+                              selectInput(inputId = "ACP_selectSolOccup", label=NULL, multiple=T, 
+                                          choices = colnames(soil_occup[, -c(1)]), 
+                                          selected = colnames(soil_occup[, -c(1)])
                               ),
+                              #div(
+                                #checkboxGroupInput(inputId = "ACP_selectSolOccup", label=NULL, selected = colnames(soil_occup[, -c(1)]), inline=T,
+                                #                  choices = colnames(soil_occup[, -c(1)]))
+                              #),
                               
                               tags$hr(),
                               p("Sélectionnez la(es) ruche(s) à analyser :"),
-                              checkboxGroupInput(inputId = "ACP_selectRuche", label=NULL, inline=T,
-                                                 selected = unique(metals_bees$Hive),
-                                                 choices = unique(metals_bees$Hive)
+                              selectInput(inputId = "ACP_selectRuche", label=NULL, multiple=T, 
+                                          #choices = setNames(metals_bees$Hive, paste(metals_bees$Hive, '(', metals_bees$Location, ')')), 
+                                          #selected = setNames(metals_bees$Hive, paste(metals_bees$Hive, '(', metals_bees$Location, ')'))
+                                          choices = paste0(metals_bees$Hive, ' (', metals_bees$Location, ')'), 
+                                          selected = paste0(metals_bees$Hive, ' (', metals_bees$Location, ')')
                               ),
+                              #checkboxGroupInput(inputId = "ACP_selectRuche", label=NULL, inline=T,
+                              #                   selected = unique(metals_bees$Hive),
+                              #                   choices = unique(metals_bees$Hive)
+                              #),
                               tags$hr(),
                               p("Sélectionnez la période :"),
                               dateRangeInput(inputId = "ACP_selectDate", label = NULL,
@@ -499,28 +514,31 @@ shinyUI(
                                 conditionalPanel(
                                   condition = "input.ACP_selectMetal.length < 17",
                                   p("• Métaux lourds :", style = "text-indent: 10px;"),
-                                  div(class="multicol",
-                                      checkboxGroupInput(inputId = "ACP_selectMetal_Sup", label=NULL, inline=T,
-                                                         choices = NULL)
-                                  )
+                                  #div(class="multicol",
+                                      selectInput(inputId = "ACP_selectMetal_Sup", label=NULL, multiple=T, choices = NULL)
+                                      #checkboxGroupInput(inputId = "ACP_selectMetal_Sup", label=NULL, inline=T,
+                                                         #choices = NULL)
+                                  #)
                                 ),
                                 conditionalPanel(
                                   condition = "input.ACP_selectSolOccup.length < 6",
                                   p("• Composition de l'occupation des sols :", style = "text-indent: 10px;"),
-                                  div(class="multicol",
-                                      checkboxGroupInput(inputId = "ACP_selectSolOccup_Sup", label=NULL, inline=T,
-                                                         choices = NULL)
-                                  )
+                                  selectInput(inputId = "ACP_selectSolOccup_Sup", label=NULL, multiple=T, choices = NULL)
+                                  #div(class="multicol",
+                                   #   checkboxGroupInput(inputId = "ACP_selectSolOccup_Sup", label=NULL, inline=T,
+                                    #                     choices = NULL)
+                                  #)
                                 )
                               ),
                               conditionalPanel(
                                 condition = "input.ACP_selectRuche.length < 8",
                                 tags$hr(),
                                 p("Sélectionnez les groupes d'individus supplémentaires :"),
-                                div(class="multicol",
-                                    checkboxGroupInput(inputId = "ACP_selectIndiv_Sup", label=NULL, inline=T,
-                                                       choices = NULL)
-                                )
+                                selectInput(inputId = "ACP_selectIndiv_Sup", label=NULL, multiple=T, choices = NULL)
+                                #div(class="multicol",
+                                #    checkboxGroupInput(inputId = "ACP_selectIndiv_Sup", label=NULL, inline=T,
+                                #                       choices = NULL)
+                                #)
   
                               ),
                               tags$hr(),
@@ -549,6 +567,11 @@ shinyUI(
                                 wellPanel(
                                   p("Représenter l'habillage :"),
                                   radioButtons(inputId="ACP_selectHabillage", label=NULL, inline=T, choices=c("Hive", "Location", "Pas d'habillage"), selected="Pas d'habillage"),
+                                  tags$hr(),
+                                  conditionalPanel(
+                                    condition = "input.ACP_selectIndiv_Sup != 0",
+                                    colourInput(inputId = "ACP_Color_IndivSup", label = "Couleur des individus supplémentaires:", value='red')
+                                  ),
                                   tags$hr(),
                                   p("Représenter l'(es) ellipse(s) :"),
                                   checkboxInput(inputId="ACP_ellispe", label=NULL),
@@ -583,10 +606,6 @@ shinyUI(
                                       value=2
                                     )
                                   )
-                                ),
-                                conditionalPanel(
-                                  condition = "input.ACP_selectIndiv_Sup != 0",
-                                  colourInput(inputId = "ACP_Color_IndivSup", label = "Couleur des individus supplémentaires:", value='red')
                                 )
                                 
                               ),
