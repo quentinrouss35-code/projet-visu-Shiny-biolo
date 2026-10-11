@@ -417,9 +417,16 @@ shinyUI(
                                     style = "color: #FFD000; font-weight: bold; margin: 1rem 0;"),
                                  plotlyOutput("tr_pesti", height = "600px"),
                                  br(),  
-                                 p(HTML("Chaque ligne correspond à un traitement appliqué sur le vignoble, défini par une molécule et sa date d'application. Chaque point représente un prélèvement d'abeilles sur le site : sa position sur l'axe horizontal indique le délai, en jours, entre l'application et la date du prélèvement. Les résidus de pesticides ont été mesurés dans les ruches toutes les trois semaines. Seuls les prélèvements réalisés dans une fenêtre de 90 jours après l’application du traitement sont retenus. Les dates de traitement proviennent du calendrier fourni par le viticulteur pour la parcelle la plus proche des ruches.
-Pour chaque molécule et chaque date de prélèvement, la valeur retenue est la concentration moyenne observée entre les deux ruches. « Positif » lorsque la concentration est supérieure à zéro, et « Négatif »  lorsque la molécule n'est pas détectée."),
-                                   style = "color: #C0C3C8; margin-bottom: 1rem;"),
+                                 tags$ul(
+                                   style = "color: #C0C3C8; margin-bottom: 1rem;",
+                                   tags$li("Chaque ligne correspond à un traitement appliqué sur le vignoble, défini par une molécule et sa date d'application."),
+                                   tags$li("Chaque point représente une mesure de résidus de pesticides réalisée sur des abeilles du site : sa position sur l'axe des abscisses indique le délai, en jours, entre l'application et la date du prélèvement."),
+                                   tags$li("Les résidus de pesticides ont été mesurés dans les ruches toutes les trois semaines."),
+                                   tags$li("Seuls les prélèvements réalisés dans une fenêtre de 90 jours après l'application du traitement sont retenus."),
+                                   tags$li("Les dates de traitement proviennent du calendrier fourni par le viticulteur pour la parcelle la plus proche des ruches."),
+                                   tags$li("Pour chaque molécule et chaque date de prélèvement, la valeur retenue est la concentration moyenne observée entre les deux ruches."),
+                                   tags$li("Un point est « positif » lorsque la concentration est supérieure à zéro, et « négatif » lorsque la molécule n'est pas détectée.")
+                                 ),
                         )
                       )
              ),
