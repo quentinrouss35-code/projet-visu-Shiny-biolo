@@ -361,14 +361,15 @@ shinyServer(function(input, output, session) {
   
   ## ACP sur les concentrations de métaux lourds
   observeEvent(input$ACP_selectMetal, {
-    updateCheckboxGroupInput(
+    updateSelectInput(
       session,
       inputId = "ACP_selectMetal_Sup",
-      choices = setdiff(colnames(metals_bees[, 4:20]), input$ACP_selectMetal)
+      choices = setdiff(colnames(metals_bees[, 4:20]), input$ACP_selectMetal),
+      selected = setdiff(colnames(metals_bees[, 4:20]), input$ACP_selectMetal)
     )
   })
   
-  observeEvent(input$GMetaux_Select_Locations,{
+  observeEvent(input$GMetaux_Select_Locations, {
     updateSelectInput(
       session,
       inputId = "Test",
@@ -379,31 +380,35 @@ shinyServer(function(input, output, session) {
   
   
   observeEvent(input$ACP_selectSolOccup, {
-    updateCheckboxGroupInput(
+    updateSelectInput(
       session,
       inputId = "ACP_selectSolOccup_Sup",
-      choices = setdiff(colnames(soil_occup[, 2:7]), input$ACP_selectSolOccup)
+      choices = setdiff(colnames(soil_occup[, 2:7]), input$ACP_selectSolOccup),
+      selected = setdiff(colnames(soil_occup[, 2:7]), input$ACP_selectSolOccup)
     )
   })
   
   observeEvent(input$ACP_selectRuche, {
-    updateCheckboxGroupInput(
+    updateSelectInput(
       session,
       inputId = "ACP_selectIndiv_Sup",
-      choices = setdiff(unique(metals_bees$Hive), input$ACP_selectRuche)
+      choices = setdiff(paste0(metals_bees$Hive, ' (', metals_bees$Location, ')'), input$ACP_selectRuche),
+      selected = setdiff(paste0(metals_bees$Hive, ' (', metals_bees$Location, ')'), input$ACP_selectRuche)
     )
   })
   
   
   res_acp <- eventReactive(input$ACP_maj, {
+    ruches_select <- c(str_extract(input$ACP_selectRuche, "^[^ ]+"), str_extract(input$ACP_selectIndiv_Sup, "^[^ ]+"))
+    
     donnees <- metals_bees |> 
       inner_join(soil_occup, by='Location') |> 
-      filter(Hive %in% c(input$ACP_selectRuche, input$ACP_selectIndiv_Sup),
+      filter(Hive %in% ruches_select,
              Date >= input$ACP_selectDate[1], Date <= input$ACP_selectDate[2]) |> 
       select(1:3, input$ACP_selectMetal, input$ACP_selectSolOccup, input$ACP_selectMetal_Sup, input$ACP_selectSolOccup_Sup)
     
     
-    ind_sup <- which(donnees$Hive%in%input$ACP_selectIndiv_Sup)
+    ind_sup <- which(donnees$Hive%in%c(str_extract(input$ACP_selectIndiv_Sup, "^[^ ]+")))
     args_pca <- list(
       X = donnees,
       scale.unit = TRUE,
@@ -425,8 +430,6 @@ shinyServer(function(input, output, session) {
     length(input$ACP_selectRuche)
   })
   outputOptions(output, "nb_hives", suspendWhenHidden = FALSE)
-  
-  output$Test <- renderTable({input$ACP_selectIndiv_Sup})
   
   
   
@@ -565,9 +568,9 @@ shinyServer(function(input, output, session) {
       inner_join(soil_occup, by = "Location") |>
       filter(
         Hive %in% c(
-          input$ACP_selectRuche,
-          input$ACP_selectIndiv_Sup
-        ),
+          str_extract(input$ACP_selectRuche, "^[^ ]+"), 
+          str_extract(input$ACP_selectIndiv_Sup, "^[^ ]+")
+          ),
         Date >= input$ACP_selectDate[1],
         Date <= input$ACP_selectDate[2]
       ) |>
@@ -579,7 +582,7 @@ shinyServer(function(input, output, session) {
         input$ACP_selectSolOccup_Sup
       )
     
-    ind_sup <- which(donnees$Hive %in% input$ACP_selectIndiv_Sup)
+    ind_sup <- which(donnees$Hive %in% str_extract(input$ACP_selectIndiv_Sup, "^[^ ]+"))
     
     # Formule PCA
     code <- paste0(
