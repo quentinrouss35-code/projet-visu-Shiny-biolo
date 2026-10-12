@@ -105,7 +105,7 @@ shinyServer(function(input, output, session) {
   output$titre_boxPlotMetal <- renderText({
     metal <- tolower(str_split(input$choix_metal, " ")[[1]][1])
     conc <- str_split(input$choix_metal, " ")[[1]][2]
-    paste('Boîte à moustaches de la concentration de', metal, '(', conc, ')', 'selon', ifelse(input$choix_compar_metal=='Location', 'le foncier', 'les ruches d\'abeilles'))
+    paste0('Boîte à moustaches de la concentration en ', metal, ' (', conc, ')', ' selon ', ifelse(input$choix_compar_metal=='Location', 'le foncier', 'les ruches d\'abeilles'))
   })
   output$boxPlot_Metal <- renderPlotly({
     df <- metals_bees_explo()
@@ -135,7 +135,7 @@ shinyServer(function(input, output, session) {
   output$titre_TempoMetal <- renderText({
     metal <- tolower(str_split(input$choix_metal, " ")[[1]][1])
     conc <- str_split(input$choix_metal, " ")[[1]][2]
-    paste('Evolution temporelle de la concentration de', metal, '(', conc, ')', 'selon', ifelse(input$choix_compar_metal=='Location', 'le foncier', 'les ruches d\'abeilles'))
+    paste0('Evolution temporelle de la concentration en ', metal, ' (', conc, ')', ' selon ', ifelse(input$choix_compar_metal=='Location', 'le foncier', 'les ruches d\'abeilles'))
   })
   output$Tempo_Metal <- renderPlotly({
     input$maj_g_explo
