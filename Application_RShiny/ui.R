@@ -144,7 +144,7 @@ shinyUI(
                                                         fluidRow(
                                                           column(width = 12,
                                                                  selectInput(inputId="varloc1",
-                                                                             label="Sélectionnez une(des) localisations :",
+                                                                             label="Sélectionnez une(des) localisation(s) :",
                                                                              choices=c(unique(soil_occup$Location)),
                                                                              selected=c(unique(soil_occup$Location)),
                                                                              multiple=T
@@ -159,9 +159,9 @@ shinyUI(
                                              tabPanel("Graphiques",
                                                       wellPanel(
                                                         fluidRow(
-                                                          column(width = 2,
+                                                          column(width = 12,
                                                                  selectInput(inputId="varloc2",
-                                                                             label="Sélectionnez une(des) localisations :",
+                                                                             label="Sélectionnez une(des) localisation(s) :",
                                                                              choices=c(unique(soil_occup$Location)),
                                                                              selected=c(unique(soil_occup$Location)[1]),
                                                                              multiple=T
@@ -237,7 +237,7 @@ shinyUI(
                                                           ),
                                                           column(width=4,
                                                                  selectInput(inputId="TabPest_Select_Locations",
-                                                                             label="Sélectionnez une(des) localisations :",
+                                                                             label="Sélectionnez une(des) localisation(s) :",
                                                                              choices=c(unique(pest_bees$Location)),
                                                                              selected=c(unique(pest_bees$Location)),
                                                                              multiple=T
@@ -257,13 +257,14 @@ shinyUI(
                                              tabPanel("Tableau de données",
                                                       wellPanel(
                                                         fluidRow(
-                                                          column(width = 6, 
+                                                          column(width=1),
+                                                          column(width = 5, 
                                                                  selectInput(inputId = "varmet1",
                                                                              label = "Sélectionnez un métal : ", 
                                                                              choices = c("Tous",l_metaux), 
                                                                              selected= "Tous", multiple=T)
                                                           ),
-                                                          column(width=6, 
+                                                          column(width=5, 
                                                                  selectInput(inputId="selecthivemetals",
                                                                              label="Sélectionnez une(des) ruche(s)",
                                                                              choices=c("Toutes",as.character(metals_bees$Hive)),
@@ -271,21 +272,23 @@ shinyUI(
                                                                              multiple=T
                                                                  )
                                                           ),
-                                                          column(width=6, 
+                                                          column(width=1),
+                                                          column(width=1),
+                                                          column(width=5, 
                                                                  dateRangeInput(inputId = "metals_selectDate", label = ("Sélectionnez une période :"),
                                                                                 start = min(metals_bees$Date), end = max(metals_bees$Date), 
                                                                                 min = min(metals_bees$Date), max = max(metals_bees$Date), 
                                                                                 format = "dd-mm-yyyy", language = "fr", separator = " à ")
                                                           ),
-                                                          column(width=6,
+                                                          column(width=5,
                                                                  selectInput(inputId="TabMetaux_Select_Locations",
-                                                                             label="Sélectionnez une(des) localisations :",
+                                                                             label="Sélectionnez une(des) localisation(s) :",
                                                                              choices=c(unique(metals_bees$Location)),
                                                                              selected=c(unique(metals_bees$Location)),
                                                                              multiple=T
                                                                  )
-                                                          )
-                                                        )
+                                                          ),
+                                                          column(width=1)                                                        )
                                                       ),
                                                       dataTableOutput("table_Metaux"),
                                                       column(width = 12, downloadButton("downloadData_metal", "Télécharger le tableau"))
@@ -316,9 +319,9 @@ shinyUI(
                                                         fluidRow(
                                                           column(width=4, offset=4,
                                                                  selectInput(inputId="GMetaux_Select_Locations",
-                                                                             label="Filtrez les individus par une(des) localisations :",
-                                                                             choices=c(as.character(metals_bees$Location)),
-                                                                             selected=c(as.character(metals_bees$Location)),
+                                                                             label="Filtrez les individus par une(des) localisation(s) :",
+                                                                             choices=c(metals_bees$Location),
+                                                                             selected=c(metals_bees$Location),
                                                                              multiple=T
                                                                  )
                                                           )
@@ -466,7 +469,7 @@ shinyUI(
                           conditionalPanel(
                             condition = "input.ACP_PersoData == true",
                             wellPanel(
-                              p("Sélectionnez les variables à analyser :"),
+                              p("Sélectionnez la(es) variable(s) à analyser :"),
                               p("• Métaux lourds :", style = "text-indent: 10px;"),
                               selectInput(inputId = "ACP_selectMetal", label=NULL, multiple=T, 
                                           choices = colnames(metals_bees[, -c(1:3)]), 
@@ -510,7 +513,7 @@ shinyUI(
                               conditionalPanel(
                                 condition = "input.ACP_selectMetal.length < 17 || input.ACP_selectSolOccup.length < 6",
                                 tags$hr(),
-                                p("Sélectionnez les variables quantitatives supplémentaires :"),
+                                p("Sélectionnez la(es) variable(s) quantitative(s) supplémentaire(s) :"),
                                 conditionalPanel(
                                   condition = "input.ACP_selectMetal.length < 17",
                                   p("• Métaux lourds :", style = "text-indent: 10px;"),
@@ -533,7 +536,7 @@ shinyUI(
                               conditionalPanel(
                                 condition = "input.ACP_selectRuche.length < 8",
                                 tags$hr(),
-                                p("Sélectionnez les groupes d'individus supplémentaires :"),
+                                p("Sélectionnez la(es) groupe(s) d'individus supplémentaire(s) :"),
                                 selectInput(inputId = "ACP_selectIndiv_Sup", label=NULL, multiple=T, choices = NULL)
                                 #div(class="multicol",
                                 #    checkboxGroupInput(inputId = "ACP_selectIndiv_Sup", label=NULL, inline=T,
@@ -567,9 +570,10 @@ shinyUI(
                                 wellPanel(
                                   p("Représenter l'habillage :"),
                                   radioButtons(inputId="ACP_selectHabillage", label=NULL, inline=T, choices=c("Hive", "Location", "Pas d'habillage"), selected="Pas d'habillage"),
-                                  tags$hr(),
+                                  
                                   conditionalPanel(
                                     condition = "input.ACP_selectIndiv_Sup != 0",
+                                    tags$hr(),
                                     colourInput(inputId = "ACP_Color_IndivSup", label = "Couleur des individus supplémentaires:", value='red')
                                   ),
                                   tags$hr(),
@@ -591,7 +595,7 @@ shinyUI(
                                     condition = "input.ACP_selectInd == 'cos2'",
                                     sliderInput(
                                       inputId = "ACP_selectIndValue_Cos2",
-                                      label = "Seuil de sélection (%) :",
+                                      label = "Les individus qui ont un cos2 > à :",
                                       min=0,
                                       max=1,
                                       value=0
@@ -600,7 +604,7 @@ shinyUI(
                                     condition = "input.ACP_selectInd == 'contrib'",
                                     sliderInput(
                                       inputId = "ACP_selectIndValue_Contrib",
-                                      label = "Seuil de sélection (%) :",
+                                      label = "Les X individus qui contribuent le plus :",
                                       min=1,
                                       max=nrow(metals_bees),
                                       value=2
@@ -627,7 +631,7 @@ shinyUI(
                                     condition = "input.ACP_selectVar == 'cos2'",
                                     sliderInput(
                                       inputId = "ACP_selectVarValue_Cos2",
-                                      label = "Seuil de sélection (%) :",
+                                      label = "Les individus qui ont un cos2 > à :",
                                       min=0,
                                       max=1,
                                       value=0
@@ -636,7 +640,7 @@ shinyUI(
                                     condition = "input.ACP_selectVar == 'contrib'",
                                     sliderInput(
                                       inputId = "ACP_selectVarValue_Contrib",
-                                      label = "Seuil de sélection (%) :",
+                                      label = "Les X individus qui contribuent le plus :",
                                       min=1,
                                       max=(ncol(metals_bees)-3),
                                       value=2
