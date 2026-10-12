@@ -27,14 +27,14 @@ shinyUI(
                                    style = "background-color: #565A61; color: #FFD000;",
                                    card_header("INTRODUCTION"),
                                    card_body(
-                                     p("Les abeilles domestiques sont exposées à de nombreux contaminants, notamment avec l'usage croissant des pesticides et l'augmentation des teneurs en métaux d'origine humaine, qui menacent la biodiversité et les services écosystémiques comme la pollinisation. Grâce à son large rayon de butinage et à sa capacité de stockage, l'abeille domestique constitue un outil précieux pour évaluer les risques environnementaux, son profil d'exposition pouvant fournir des signaux d'alerte précoce d'impacts écologiques plus larges.")
+                                     p("Les abeilles sont exposées à de nombreux contaminants, notamment avec l'usage croissant des pesticides et l'augmentation des teneurs en métaux d'origine humaine, qui menacent la biodiversité et les services écosystémiques comme la pollinisation. Grâce à son large rayon de butinage et à sa capacité de stockage, l'abeille domestique constitue un outil précieux pour évaluer les risques environnementaux, son profil d'exposition pouvant fournir des signaux d'alerte précoce d'impacts écologiques plus larges.")
                                    )
                                  ),
                                  card(
                                    style = "background-color: #565A61; color: #FFD000;",
                                    card_header("PROBLÉMATIQUE"),
                                    card_body(
-                                     p("Les abeilles domestiques peuvent-elles servir de biosentinelles pour détecter et comparer l'exposition aux pesticides et aux métaux dans des milieux contrastés ?")
+                                     p("Les abeilles peuvent-elles servir de biosentinelles pour détecter et comparer l'exposition aux pesticides et aux métaux dans des milieux contrastés ?")
                                    )
                                  )
                                )
@@ -89,7 +89,7 @@ shinyUI(
                                  value_box(
                                    title = "",
                                    value = "Teneur en métaux",
-                                   "Concentrations en métaux (g/kg ou mg/kg) mesurées par site, par ruche et par date.",
+                                   "Concentrations en métaux (g/kg ou mg/kg) mesurées dans le miel par site, par ruche et par date.",
                                    theme = value_box_theme(bg = "#151617", fg = "#FFD000")
                                  ),
                                  value_box(
@@ -101,7 +101,7 @@ shinyUI(
                                  value_box(
                                    title = "",
                                    value = "Résidus de pesticides mesurés",
-                                   "Concentrations en pesticides (ng/g) mesurées par site, par ruche et par date.",
+                                   "Concentrations en pesticides (ng/g) mesurées dans le miel par site, par ruche et par date.",
                                    theme = value_box_theme(bg = "#151617", fg = "#FFD000")
                                  ),
                                  value_box(
@@ -120,7 +120,7 @@ shinyUI(
                       ),
                       fluidRow(
                         column(12,
-                               h5("Bibliographie",
+                               h5("Source",
                                   style = "color: #C0C3C8; font-weight: bold; margin: 1rem 0;"),
                                p("Tison, L., et al. (2026). Vineyard footprint revealed by honey bees used as sentinels for organic and inorganic contaminants in contrasted environments. ",
                                  em("Peer Community Journal"),
@@ -404,23 +404,23 @@ shinyUI(
                                  ),
                                  fluidRow(
                                    column(12,
-                                          h3("Évolution des concentrations en métaux au cours du temps",
+                                          h3("Évolution des concentrations en métaux dans le miel au cours du temps",
                                              style = "color: #FFD000; font-weight: bold; margin: 1rem 0;"),
-                                          p("Pour chaque métal, la courbe montre l'évolution de la concentration mesurée dans les ruches au fil des dates d'échantillonnage. Les traits verticaux correspondent aux doses de pesticides appliquées sur le vignoble.",
+                                          p("Pour chaque métal, la courbe montre l'évolution de la concentration mesurée dans le miel au fil des dates d'échantillonnage. Les traits verticaux correspondent aux doses de pesticides appliquées sur le vignoble.",
                                             style = "color: #C0C3C8; margin-bottom: 1rem;")
                                    )
                                  ),
                                  uiOutput("plots_metaux_trait")
                         ),
                         tabPanel("Sur les résidus de pesticides",
-                                 h3("Détection des résidus de pesticides chez les abeilles après traitement phytosanitaire",
+                                 h3("Détection des résidus de pesticides dans le miel après traitement phytosanitaire",
                                     style = "color: #FFD000; font-weight: bold; margin: 1rem 0;"),
                                  plotlyOutput("tr_pesti", height = "600px"),
                                  br(),  
                                  tags$ul(
                                    style = "color: #C0C3C8; margin-bottom: 1rem;",
                                    tags$li("Chaque ligne correspond à un traitement appliqué sur le vignoble, défini par une molécule et sa date d'application."),
-                                   tags$li("Chaque point représente une mesure de résidus de pesticides réalisée sur des abeilles du site : sa position sur l'axe des abscisses indique le délai, en jours, entre l'application et la date du prélèvement."),
+                                   tags$li("Chaque point représente une mesure de résidus de pesticides réalisée sur le miel des ruches du vignoble : sa position sur l'axe des abscisses indique le délai, en jours, entre l'application et la date du prélèvement."),
                                    tags$li("Les résidus de pesticides ont été mesurés dans les ruches toutes les trois semaines."),
                                    tags$li("Seuls les prélèvements réalisés dans une fenêtre de 90 jours après l'application du traitement sont retenus."),
                                    tags$li("Les dates de traitement proviennent du calendrier fourni par le viticulteur pour la parcelle la plus proche des ruches."),
