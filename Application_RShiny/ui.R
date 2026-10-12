@@ -366,7 +366,7 @@ shinyUI(
                                                 style = "background-color: black; color: white;",
                                                 card_header("Tests T intra sites"),
                                                 card_body(
-                                                  p("Différence en log entre les deux ruches d'un même site, avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05, non corrigée pour les tests multiples).")
+                                                  p("Différences de log concentrations de métaux entre les deux ruches d'un même site, test de Student avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0.05). Analyse exploratoire sans correction pour les tests multiples.")
                                                 )))
                                             )),
                                    tabPanel("Variabilité inter site",
@@ -378,7 +378,7 @@ shinyUI(
                                                 style = "background-color: black; color: white;",
                                                 card_header("Tests de comparaison inter sites"),
                                                 card_body(
-                                                  p("Différence en log entre les deux sites différents (1er site - 2e site), avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0,05).")
+                                                  p("Différences de log concentrations en métaux entre les deux sites différents (1er site - 2e site), avec intervalle de confiance à 95 %. Un intervalle qui croise 0 indique l'absence de différence significative (p ≥ 0.05).")
                                                 ))
                                               ),
                                               column(width=12, card(
